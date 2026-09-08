@@ -1,0 +1,106 @@
+/*
+  Aurevo design tokens.
+  Direction: a deep indigo-black stage (not pure #000/#111) with a single
+  living accent — a warm signal-amber used only for "this is active / this
+  is playing / this is you" moments — plus a cool aurora teal reserved for
+  glass edge-light. Two typefaces: a condensed display face for numerals
+  and section marks (this is a media product; runtimes, prices and counts
+  matter), and a humanist sans for everything read at length.
+*/
+
+:root {
+  /* Base stage */
+  --stage-950: #0a0e14;
+  --stage-900: #10151d;
+  --stage-800: #171e28;
+  --stage-700: #212a37;
+  --stage-600: #303c4c;
+
+  /* Text */
+  --ink-000: #f4f6f9;
+  --ink-100: #d3dae4;
+  --ink-300: #93a1b3;
+  --ink-500: #5d6b80;
+
+  /* Accent: signal amber — used sparingly, for the active/live state */
+  --signal-500: #ffb04d;
+  --signal-400: #ffc978;
+  --signal-glow: rgba(255, 176, 77, 0.35);
+
+  /* Aurora — cool edge-light for glass, used for structure not action */
+  --aurora-400: #57e2c9;
+  --aurora-glow: rgba(87, 226, 201, 0.25);
+
+  /* Status */
+  --good-500: #4ade80;
+  --bad-500: #f26d6d;
+
+  /* Glass */
+  --glass-fill: rgba(23, 30, 40, 0.55);
+  --glass-fill-strong: rgba(23, 30, 40, 0.78);
+  --glass-border: rgba(211, 218, 228, 0.09);
+  --glass-border-strong: rgba(211, 218, 228, 0.16);
+  --glass-blur: 18px;
+
+  /* Type */
+  --font-display: "Fraunces", "Iowan Old Style", ui-serif, serif;
+  --font-body: "Inter", -apple-system, "Segoe UI", sans-serif;
+  --font-mono: "IBM Plex Mono", ui-monospace, monospace;
+
+  /* Radius */
+  --r-sm: 8px;
+  --r-md: 14px;
+  --r-lg: 22px;
+  --r-pill: 999px;
+
+  /* Motion */
+  --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+  --dur-fast: 160ms;
+  --dur-med: 320ms;
+}
+
+* { box-sizing: border-box; }
+
+html, body, #root { height: 100%; }
+
+body {
+  margin: 0;
+  background: radial-gradient(ellipse 80% 60% at 50% -10%, #182233 0%, var(--stage-950) 60%);
+  color: var(--ink-100);
+  font-family: var(--font-body);
+  -webkit-font-smoothing: antialiased;
+}
+
+a { color: inherit; }
+
+button, input {
+  font-family: inherit;
+  color: inherit;
+}
+
+::selection { background: var(--signal-glow); color: var(--ink-000); }
+
+@media (prefers-reduced-motion: reduce) {
+  * { animation-duration: 0.001ms !important; transition-duration: 0.001ms !important; }
+}
+
+/* Reusable glass surface */
+.glass {
+  background: var(--glass-fill);
+  border: 1px solid var(--glass-border);
+  backdrop-filter: blur(var(--glass-blur));
+  -webkit-backdrop-filter: blur(var(--glass-blur));
+  border-radius: var(--r-lg);
+}
+
+.visually-hidden {
+  position: absolute;
+  width: 1px; height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+}
+
+:focus-visible {
+  outline: 2px solid var(--aurora-400);
+  outline-offset: 2px;
+}

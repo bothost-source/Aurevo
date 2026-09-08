@@ -1,0 +1,115 @@
+@import "./tokens.css";
+
+.app-shell {
+  min-height: 100%;
+  padding-bottom: 104px; /* leave room for the floating nav */
+}
+
+.page {
+  max-width: 1180px;
+  margin: 0 auto;
+  padding: 40px 24px 24px;
+}
+
+.page-header {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 28px;
+}
+
+.page-header h1 {
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: 2.1rem;
+  margin: 0;
+  color: var(--ink-000);
+}
+
+.page-header p {
+  color: var(--ink-300);
+  margin: 6px 0 0;
+  max-width: 60ch;
+}
+
+.section-title {
+  font-family: var(--font-display);
+  font-size: 1.3rem;
+  color: var(--ink-000);
+  margin: 36px 0 14px;
+}
+
+.rail {
+  display: flex;
+  gap: 16px;
+  overflow-x: auto;
+  padding-bottom: 8px;
+  scrollbar-width: thin;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  gap: 18px;
+}
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 12px 20px;
+  border-radius: var(--r-md);
+  border: 1px solid transparent;
+  font-weight: 600;
+  font-size: 0.95rem;
+  cursor: pointer;
+  transition: transform var(--dur-fast) var(--ease-out), box-shadow var(--dur-fast) var(--ease-out), background var(--dur-fast);
+}
+.btn:active { transform: scale(0.98); }
+.btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+.btn-primary {
+  background: linear-gradient(135deg, var(--signal-400), var(--signal-500));
+  color: #201404;
+  box-shadow: 0 8px 24px -8px var(--signal-glow);
+}
+.btn-primary:hover { box-shadow: 0 10px 30px -6px var(--signal-glow); }
+
+.btn-ghost {
+  background: var(--glass-fill);
+  border-color: var(--glass-border-strong);
+  color: var(--ink-100);
+}
+.btn-ghost:hover { border-color: var(--aurora-400); }
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-bottom: 16px;
+}
+
+.field label {
+  font-size: 0.82rem;
+  color: var(--ink-300);
+}
+
+.field input, .field select {
+  background: rgba(10, 14, 20, 0.6);
+  border: 1px solid var(--glass-border-strong);
+  border-radius: var(--r-sm);
+  padding: 12px 14px;
+  font-size: 1rem;
+  color: var(--ink-000);
+  transition: border-color var(--dur-fast);
+}
+.field input:focus, .field select:focus {
+  border-color: var(--aurora-400);
+  box-shadow: 0 0 0 3px var(--aurora-glow);
+}
+
+.helper-text { font-size: 0.78rem; color: var(--ink-500); }
+.error-text { font-size: 0.78rem; color: var(--bad-500); }
+.success-text { font-size: 0.78rem; color: var(--good-500); }
