@@ -4,11 +4,11 @@ import cors from "cors";
 import path from "path";
 import { fileURLToPath } from "url";
 
-import { searchMovies, getPopularMovies, getMovieById } from "./services/providers/movieProvider.server.js";
-import { searchMusicVideos } from "./services/providers/youtubeProvider.server.js";
-import { createPaystackCheckout, verifyPaystackTransaction, verifyPaystackWebhookSignature } from "./services/payments/paystack.server.js";
-import { getUsdtWalletAddress, verifyUsdtTransaction } from "./services/payments/usdtManual.server.js";
-import { getPlanById } from "./services/plans.js";
+import { searchMovies, getPopularMovies, getMovieById } from "../src/services/providers/movieProvider.server.js";
+import { searchMusicVideos } from "../src/services/providers/youtubeProvider.server.js";
+import { createPaystackCheckout, verifyPaystackTransaction, verifyPaystackWebhookSignature } from "../src/services/payments/paystack.server.js";
+import { getUsdtWalletAddress, verifyUsdtTransaction } from "../src/services/payments/usdtManual.server.js";
+import { getPlanById } from "../src/services/plans.js";
 import { requireAuth } from "./firebaseAdmin.js";
 import {
   getUserProfile,
@@ -235,7 +235,7 @@ app.get("/api/v1/payments/history", requireAuth, async (req, res) => {
 
 // ---------- Serve frontend (MUST be last) ----------
 
-app.use(express.static(path.join(__dirname, "../../dist")));
+app.use(express.static(path.join(__dirname, "../dist")));
 
 app.get("*", (req, res) => {
   res.sendFile(path.join(__dirname, "../dist", "index.html"));
