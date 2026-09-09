@@ -1,6 +1,8 @@
 import "dotenv/config";
 import express from "express";
 import cors from "cors";
+import path from "path";
+import { fileURLToPath } from "url";
 
 import { searchMovies, getPopularMovies, getMovieById } from "../src/services/providers/movieProvider.server.js";
 import { searchMusicVideos } from "../src/services/providers/youtubeProvider.server.js";
@@ -24,10 +26,9 @@ const PORT = process.env.PORT || 8787;
 const APP_URL = process.env.APP_URL || "http://localhost:5173";
 const ADMIN_SECRET = process.env.ADMIN_SECRET;
 
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
+
 // ---------- Health check ----------
-// Point UptimeRobot (or any uptime monitor) at this to keep a free-tier
-// Render instance from spinning down after 15 minutes idle. No auth, no
-// dependencies checked — just "is the process alive and responding."
 app.get("/healthz", (req, res) => {
   res.json({ status: "ok", time: new Date().toISOString() });
 });
@@ -160,7 +161,7 @@ app.post("/api/v1/webhooks/paystack", express.raw({ type: "*/*" }), async (req, 
   }
 });
 
-// ---------- Checkout: USDT (manual, self-verified on-chain) ----------
+// ---------- Checkout: USDT (manual) ----------
 
 app.post("/api/v1/checkout/usdt-manual", express.json(), requireAuth, async (req, res) => {
   try {
@@ -169,7 +170,7 @@ app.post("/api/v1/checkout/usdt-manual", express.json(), requireAuth, async (req
     res.json({
       address: getUsdtWalletAddress(),
       network: "TRC20",
-      amount: plan.amount, // USDT is a USD-pegged stablecoin, so plan.amount (USD) is used 1:1
+      amount: plan.amount,
       currency: "USDT",
     });
   } catch (e) {
@@ -177,7 +178,6 @@ app.post("/api/v1/checkout/usdt-manual", express.json(), requireAuth, async (req
   }
 });
 
-/** The real, automatic confirmation path — looks the txid up on-chain. */
 app.post("/api/v1/checkout/usdt-manual/confirm", express.json(), requireAuth, async (req, res) => {
   try {
     const { planId, txid } = req.body;
@@ -195,7 +195,7 @@ app.post("/api/v1/checkout/usdt-manual/confirm", express.json(), requireAuth, as
       amount: result.amountUsdt,
       currency: "USDT",
       provider: "usdt-manual",
-      providerReference: txid, // doc id = txid, so resubmitting the same txid can't double-credit
+      providerReference: txid,
     });
     res.json({ verified: true });
   } catch (e) {
@@ -203,8 +203,6 @@ app.post("/api/v1/checkout/usdt-manual/confirm", express.json(), requireAuth, as
   }
 });
 
-/** Fallback only — for when a user genuinely can't get a copyable txid.
- *  This does NOT confirm payment, it queues it for you to check by hand. */
 app.post("/api/v1/checkout/usdt-manual/submit-proof", express.json({ limit: "2mb" }), requireAuth, async (req, res) => {
   try {
     const { planId, note, imageBase64 } = req.body;
@@ -216,9 +214,6 @@ app.post("/api/v1/checkout/usdt-manual/submit-proof", express.json({ limit: "2mb
   }
 });
 
-/** You approve a pending review yourself — e.g. by opening this URL with
- *  the X-Admin-Secret header set (Postman, curl, or a small admin page).
- *  Set ADMIN_SECRET in your env to something long and random. */
 app.post("/api/v1/admin/payments/:reviewId/approve", express.json(), async (req, res) => {
   if (!ADMIN_SECRET || req.headers["x-admin-secret"] !== ADMIN_SECRET) {
     return res.status(401).json({ error: "Missing or incorrect X-Admin-Secret header." });
@@ -236,6 +231,14 @@ app.get("/api/v1/payments/history", requireAuth, async (req, res) => {
   } catch (e) {
     res.status(500).json({ error: e.message });
   }
+});
+
+// ---------- Serve frontend (MUST be last) ----------
+
+app.use(express.static(path.join(__dirname, "../dist")));
+
+app.get("*", (req, res) => {
+  res.sendFile(path.join(__dirname, "../dist", "index.html"));
 });
 
 app.listen(PORT, () => {
