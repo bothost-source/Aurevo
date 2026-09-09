@@ -22,7 +22,8 @@ const LANGUAGES = [
 ];
 
 export default function SignUp() {
-  const { signUp, loading } = useAuth();
+  const { signUp, loading, error } = useAuth();
+  const [email, setEmail] = useState("");
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [country, setCountry] = useState("NG");
@@ -31,13 +32,21 @@ export default function SignUp() {
 
   async function handleSubmit(e) {
     e.preventDefault();
-    await signUp({ username, country, language });
-    navigate("/");
+    try {
+      await signUp({ email, password, username, country, language });
+      navigate("/");
+    } catch {
+      // error state is already set by AuthContext and rendered below
+    }
   }
 
   return (
     <AuthCard title="Create your account" subtitle="Movies, music and music videos — one place, your currency.">
       <form onSubmit={handleSubmit}>
+        <div className="field">
+          <label htmlFor="email">Email</label>
+          <input id="email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} autoComplete="email" required />
+        </div>
         <div className="field">
           <label htmlFor="new-username">Username</label>
           <input id="new-username" value={username} onChange={(e) => setUsername(e.target.value)} autoComplete="username" required />
@@ -61,6 +70,8 @@ export default function SignUp() {
             ))}
           </select>
         </div>
+
+        {error && <p className="error-text" style={{ marginTop: -8, marginBottom: 12 }}>{error}</p>}
 
         <button type="submit" className="btn btn-primary" style={{ width: "100%" }} disabled={loading}>
           {loading ? "Creating account…" : "Create account"}

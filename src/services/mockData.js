@@ -31,14 +31,6 @@ export const mockMusicVideos = Array.from({ length: 8 }).map((_, i) => ({
   thumbnailUrl: null,
 }));
 
-export const mockPaymentHistory = [
-  { id: "txn_1", date: "2026-08-07", amount: "4.80", currency: "USD", status: "confirmed", plan: "1 Month" },
-  { id: "txn_2", date: "2026-07-07", amount: "4.80", currency: "USD", status: "confirmed", plan: "1 Month" },
-  { id: "txn_3", date: "2026-06-07", amount: "3.00", currency: "USD", status: "failed", plan: "2 Weeks" },
-];
-
-export const plans = [
-  { id: "week", label: "1 Week", price: "$1.00", billing: "Weekly" },
-  { id: "biweek", label: "2 Weeks", price: "$3.00", billing: "Every 2 weeks" },
-  { id: "month", label: "1 Month", price: "$4.80", billing: "Monthly" },
-];
+// Real plan data now lives in ./plans.js (shared with the backend so the
+// price shown always matches the price charged). Real payment history is
+// fetched from your backend in paymentsClient.js — no fake rows here.
