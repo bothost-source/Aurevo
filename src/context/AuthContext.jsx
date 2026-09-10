@@ -11,16 +11,8 @@ import { saveProfile, fetchProfile } from "../services/paymentsClient.js";
 
 const AuthContext = createContext(null);
 
-/**
- * Real Firebase Authentication + a real profile stored in Firestore via
- * your backend (server/db.js). Username/password uses Firebase's
- * email/password provider — Firebase Auth doesn't have a native "username"
- * concept, so username/country/language live in Firestore instead, keyed
- * by uid, and are fetched on every sign-in (not just remembered locally,
- * so a profile update shows up after a refresh or on a new device).
- */
 export function AuthProvider({ children }) {
-  const [firebaseUser, setFirebaseUser] = useState(undefined); // undefined = not yet resolved
+  const [firebaseUser, setFirebaseUser] = useState(undefined);
   const [profile, setProfile] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
@@ -75,12 +67,32 @@ export function AuthProvider({ children }) {
         setLoading(true);
         setError(null);
         try {
+          // Step 1: Create Firebase auth user
           const cred = await createUserWithEmailAndPassword(auth, email, password);
-          await saveProfile({ username, country, language });
-          setProfile({ username, country, language });
+          
+          // Step 2: Save profile to backend (non-blocking if it fails)
+          try {
+            await saveProfile({ username, country, language });
+            setProfile({ username, country, language });
+          } catch (profileErr) {
+            console.warn("Profile save failed, but account created:", profileErr);
+            // Don't throw - account is created, profile can be updated later
+          }
+          
           return cred.user;
         } catch (e) {
-          setError(mapFirebaseError(e));
+          // Handle specific Firebase errors
+          if (e.code === "auth/email-already-in-use") {
+            setError("That email is already registered. Try signing in instead.");
+          } else if (e.code === "auth/weak-password") {
+            setError("Choose a stronger password (at least 6 characters).");
+          } else if (e.code === "auth/invalid-email") {
+            setError("Please enter a valid email address.");
+          } else if (e.code === "auth/network-request-failed") {
+            setError("Network error. Check your internet connection.");
+          } else {
+            setError(mapFirebaseError(e));
+          }
           throw e;
         } finally {
           setLoading(false);
@@ -108,8 +120,9 @@ function mapFirebaseError(e) {
   const code = e?.code || "";
   if (code.includes("wrong-password") || code.includes("invalid-credential")) return "Incorrect email or password.";
   if (code.includes("user-not-found")) return "No account found with that email.";
-  if (code.includes("email-already-in-use")) return "That email is already registered.";
-  if (code.includes("weak-password")) return "Choose a stronger password.";
+  if (code.includes("email-already-in-use")) return "That email is already registered. Try signing in.";
+  if (code.includes("weak-password")) return "Choose a stronger password (at least 6 characters).";
   if (code.includes("popup-closed-by-user")) return "Google sign-in was cancelled.";
+  if (code.includes("network-request-failed")) return "Network error. Check your connection.";
   return "Something went wrong. Please try again.";
 }
