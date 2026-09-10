@@ -1,54 +1,294 @@
-.content-card {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-  flex: 0 0 auto;
-  width: 170px;
+/* Movie Card */
+.movie-card {
+  width: 180px;
+  cursor: pointer;
+  transition: transform 0.2s;
 }
 
-.content-card__art {
+.movie-card:hover {
+  transform: translateY(-4px);
+}
+
+.movie-card__poster-container {
   position: relative;
   width: 100%;
-  aspect-ratio: 2 / 3;
-  border-radius: var(--r-md);
-  border: 1px solid var(--glass-border);
+  aspect-ratio: 2/3;
+  border-radius: 12px;
   overflow: hidden;
-  display: flex;
-  align-items: flex-end;
-  padding: 10px;
-}
-.content-card__art span {
-  font-family: var(--font-display);
-  font-size: 0.85rem;
-  color: rgba(255, 255, 255, 0.8);
+  background: #1e293b;
 }
 
-.content-card--square .content-card__art { aspect-ratio: 1 / 1; }
-.content-card--wide { width: 240px; }
-.content-card--wide .content-card__art { aspect-ratio: 16 / 9; }
-
-.content-card__actions {
+.movie-card__skeleton {
   position: absolute;
-  top: 8px;
-  right: 8px;
+  inset: 0;
+  background: linear-gradient(90deg, #1e293b 25%, #334155 50%, #1e293b 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
 }
 
-.content-card__meta {
+@keyframes shimmer {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
+.movie-card__placeholder {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, #334155 0%, #1e293b 100%);
+}
+
+.movie-card__placeholder span {
+  font-size: 48px;
+  font-weight: 700;
+  color: #475569;
+}
+
+.movie-card__poster {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  opacity: 0;
+  transition: opacity 0.3s;
+}
+
+.movie-card__poster.loaded {
+  opacity: 1;
+}
+
+.movie-card__overlay {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(to top, rgba(0,0,0,0.9) 0%, transparent 50%);
+  opacity: 0;
+  transition: opacity 0.2s;
   display: flex;
   flex-direction: column;
-  gap: 2px;
-  padding: 0 2px;
+  align-items: center;
+  justify-content: flex-end;
+  padding: 16px;
 }
-.content-card__meta strong {
-  font-size: 0.86rem;
-  color: var(--ink-000);
+
+.movie-card:hover .movie-card__overlay {
+  opacity: 1;
+}
+
+.movie-card__play-btn {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  background: rgba(74, 222, 128, 0.9);
+  border: none;
+  color: #0f172a;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 12px;
+  transition: transform 0.2s, background 0.2s;
+}
+
+.movie-card__play-btn:hover {
+  transform: scale(1.1);
+  background: #4ade80;
+}
+
+.movie-card__play-btn svg {
+  width: 24px;
+  height: 24px;
+  margin-left: 2px;
+}
+
+.movie-card__download {
+  width: 100%;
+}
+
+.movie-card__rating {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 8px;
+  background: rgba(0, 0, 0, 0.7);
+  border-radius: 8px;
+  font-size: 12px;
+  font-weight: 600;
+  color: #fbbf24;
+}
+
+.movie-card__rating svg {
+  width: 14px;
+  height: 14px;
+}
+
+.movie-card__info {
+  padding: 12px 4px;
+}
+
+.movie-card__title {
+  font-size: 14px;
+  font-weight: 600;
+  color: #fff;
+  margin: 0 0 4px;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
 }
-.content-card__meta span {
-  font-size: 0.74rem;
-  color: var(--ink-500);
+
+.movie-card__meta {
+  font-size: 12px;
+  color: #94a3b8;
+  margin: 0;
 }
 
-.grid .content-card { width: auto; }
+/* Music Card */
+.music-card {
+  width: 160px;
+  cursor: pointer;
+  transition: transform 0.2s;
+}
+
+.music-card:hover {
+  transform: translateY(-4px);
+}
+
+.music-card__cover-container {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 1;
+  border-radius: 12px;
+  overflow: hidden;
+  background: #1e293b;
+}
+
+.music-card__skeleton {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(90deg, #1e293b 25%, #334155 50%, #1e293b 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
+}
+
+.music-card__placeholder {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, #334155 0%, #1e293b 100%);
+}
+
+.music-card__placeholder span {
+  font-size: 36px;
+  font-weight: 700;
+  color: #475569;
+}
+
+.music-card__cover {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  opacity: 0;
+  transition: opacity 0.3s;
+}
+
+.music-card__cover.loaded {
+  opacity: 1;
+}
+
+.music-card__overlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.4);
+  opacity: 0;
+  transition: opacity 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.music-card:hover .music-card__overlay {
+  opacity: 1;
+}
+
+.music-card__play-btn {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.95);
+  border: none;
+  color: #0f172a;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform 0.2s;
+}
+
+.music-card__play-btn:hover {
+  transform: scale(1.1);
+}
+
+.music-card__play-btn.playing {
+  background: #4ade80;
+}
+
+.music-card__play-btn svg {
+  width: 24px;
+  height: 24px;
+}
+
+.music-card__duration {
+  position: absolute;
+  bottom: 12px;
+  right: 12px;
+  padding: 4px 8px;
+  background: rgba(0, 0, 0, 0.7);
+  border-radius: 4px;
+  font-size: 12px;
+  color: #fff;
+}
+
+.music-card__info {
+  padding: 12px 4px;
+}
+
+.music-card__title {
+  font-size: 14px;
+  font-weight: 600;
+  color: #fff;
+  margin: 0 0 4px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.music-card__artist {
+  font-size: 12px;
+  color: #94a3b8;
+  margin: 0;
+}
+
+/* Mobile Responsive */
+@media (max-width: 768px) {
+  .movie-card,
+  .music-card {
+    width: 140px;
+  }
+
+  .movie-card__play-btn,
+  .music-card__play-btn {
+    width: 40px;
+    height: 40px;
+  }
+
+  .movie-card__play-btn svg,
+  .music-card__play-btn svg {
+    width: 20px;
+    height: 20px;
+  }
+}
