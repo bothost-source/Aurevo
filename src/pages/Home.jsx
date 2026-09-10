@@ -1,18 +1,61 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import MovieCarousel from "../components/cards/MovieCarousel.jsx";
 import { MovieCard, MusicCard } from "../components/cards/Cards.jsx";
-import { mockMovies, mockAlbums } from "../services/mockData.js";
-
-const FEATURED = [
-  { id: "f1", title: "The Long Signal", year: 2026, genre: "Sci-Fi", rating: "8.4", gradient: "linear-gradient(160deg,#3a2a6b,#0a0e14)" },
-  { id: "f2", title: "Harbor Lights", year: 2025, genre: "Drama", rating: "7.9", gradient: "linear-gradient(160deg,#6b2a3a,#0a0e14)" },
-  { id: "f3", title: "Redline", year: 2026, genre: "Action", rating: "8.1", gradient: "linear-gradient(160deg,#2a6b57,#0a0e14)" },
-  { id: "f4", title: "Paper Moons", year: 2024, genre: "Romance", rating: "7.5", gradient: "linear-gradient(160deg,#6b5a2a,#0a0e14)" },
-  { id: "f5", title: "Static Bloom", year: 2026, genre: "Thriller", rating: "8.6", gradient: "linear-gradient(160deg,#2a3a6b,#0a0e14)" },
-];
+import { searchMovies, getPopularMovies } from "../services/api.js";
+import { searchMusicVideos } from "../services/api.js";
 
 export default function Home() {
+  const [movies, setMovies] = useState([]);
+  const [musicVideos, setMusicVideos] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
   const [trailer, setTrailer] = useState(null);
+
+  useEffect(() => {
+    async function loadData() {
+      try {
+        setLoading(true);
+        
+        // Fetch real movies from TMDB via your backend
+        const movieData = await getPopularMovies({ page: 1 });
+        setMovies(movieData.results || []);
+        
+        // Fetch real music videos from YouTube via your backend
+        const musicData = await searchMusicVideos("trending music");
+        setMusicVideos(musicData.results || []);
+        
+      } catch (err) {
+        console.error("Failed to load content:", err);
+        setError("Failed to load content. Please try again.");
+      } finally {
+        setLoading(false);
+      }
+    }
+    
+    loadData();
+  }, []);
+
+  if (loading) {
+    return (
+      <div className="page">
+        <div className="loading-container">
+          <div className="loading-spinner" />
+          <p>Loading amazing content...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="page">
+        <div className="error-container">
+          <p>{error}</p>
+          <button onClick={() => window.location.reload()}>Retry</button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="page">
@@ -23,21 +66,46 @@ export default function Home() {
         </div>
       </div>
 
-      <MovieCarousel items={FEATURED} onPlayTrailer={setTrailer} />
+      {/* Featured Carousel - Real Movies */}
+      <MovieCarousel 
+        items={movies.slice(0, 5)} 
+        onPlayTrailer={setTrailer} 
+      />
+      
       {trailer && (
-        <p className="helper-text" style={{ textAlign: "center" }}>
-          Wire this up to your licensed trailer source for “{trailer.title}.”
-        </p>
+        <div className="trailer-modal" onClick={() => setTrailer(null)}>
+          <div className="trailer-content" onClick={(e) => e.stopPropagation()}>
+            <button className="close-btn" onClick={() => setTrailer(null)}>×</button>
+            <video 
+              controls 
+              autoPlay 
+              src={trailer.trailerUrl || trailer.streamUrl}
+              poster={trailer.backdropUrl}
+            />
+          </div>
+        </div>
       )}
 
-      <h2 className="section-title">Continue watching</h2>
+      <h2 className="section-title">Trending Movies</h2>
       <div className="rail">
-        {mockMovies.slice(0, 6).map((m) => <MovieCard key={m.id} movie={m} />)}
+        {movies.slice(0, 12).map((movie) => (
+          <MovieCard 
+            key={movie.id} 
+            movie={movie}
+            onPlay={() => setTrailer(movie)}
+          />
+        ))}
       </div>
 
-      <h2 className="section-title">Fresh on Aurevo</h2>
+      <h2 className="section-title">Fresh Music Videos</h2>
       <div className="rail">
-        {mockAlbums.slice(0, 6).map((t) => <MusicCard key={t.id} track={t} />)}
+        {musicVideos.slice(0, 12).map((video) => (
+          <MusicCard 
+            key={video.id} 
+            track={video}
+            onPlay={() => window.open(video.videoUrl, '_blank')}
+          />
+        ))}
       </div>
     </div>
   );
