@@ -1,0 +1,266 @@
+/* Base Page */
+.page {
+  min-height: 100vh;
+  padding: 24px;
+  padding-bottom: 100px;
+  background: #0a0e14;
+  color: #fff;
+}
+
+.page-header {
+  margin-bottom: 32px;
+}
+
+.page-header h1 {
+  font-size: 32px;
+  font-weight: 700;
+  margin: 0 0 8px;
+}
+
+.page-header p {
+  font-size: 16px;
+  color: #94a3b8;
+  margin: 0;
+}
+
+.section-title {
+  font-size: 20px;
+  font-weight: 600;
+  margin: 32px 0 16px;
+  color: #fff;
+}
+
+/* Loading & Error States */
+.loading-container,
+.error-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 400px;
+  gap: 16px;
+}
+
+.loading-spinner {
+  width: 48px;
+  height: 48px;
+  border: 4px solid rgba(74, 222, 128, 0.2);
+  border-top-color: #4ade80;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+.error-container p {
+  color: #f87171;
+  font-size: 16px;
+}
+
+.retry-btn,
+.load-more-btn {
+  padding: 12px 32px;
+  background: linear-gradient(135deg, #4ade80, #22c55e);
+  border: none;
+  border-radius: 8px;
+  color: #0f172a;
+  font-weight: 600;
+  cursor: pointer;
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.retry-btn:hover,
+.load-more-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 25px -5px rgba(74, 222, 128, 0.4);
+}
+
+.load-more-container {
+  display: flex;
+  justify-content: center;
+  margin-top: 32px;
+}
+
+/* Rail - Horizontal Scroll */
+.rail {
+  display: flex;
+  gap: 16px;
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  -webkit-overflow-scrolling: touch;
+  padding-bottom: 16px;
+  margin: 0 -24px;
+  padding-left: 24px;
+  padding-right: 24px;
+}
+
+.rail::-webkit-scrollbar {
+  display: none;
+}
+
+.rail > * {
+  scroll-snap-align: start;
+  flex-shrink: 0;
+}
+
+/* Player Modal */
+.player-modal {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.9);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: 20px;
+}
+
+.player-content {
+  position: relative;
+  width: 100%;
+  max-width: 900px;
+  background: #1e293b;
+  border-radius: 16px;
+  overflow: hidden;
+}
+
+.player-close {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: rgba(0, 0, 0, 0.7);
+  border: none;
+  color: #fff;
+  font-size: 24px;
+  cursor: pointer;
+  z-index: 10;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.2s;
+}
+
+.player-close:hover {
+  background: rgba(0, 0, 0, 0.9);
+}
+
+.player-video-container {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 16/9;
+  background: #000;
+}
+
+.player-video-container video {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+.player-placeholder {
+  position: relative;
+  width: 100%;
+  height: 100%;
+}
+
+.player-placeholder img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.player-overlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.7);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.player-overlay p {
+  color: #94a3b8;
+  font-size: 16px;
+}
+
+.player-info {
+  padding: 24px;
+}
+
+.player-info h2 {
+  font-size: 24px;
+  font-weight: 700;
+  margin: 0 0 8px;
+}
+
+.player-meta {
+  font-size: 14px;
+  color: #94a3b8;
+  margin: 0 0 16px;
+}
+
+.player-synopsis {
+  font-size: 15px;
+  line-height: 1.6;
+  color: #cbd5e0;
+  margin: 0;
+}
+
+/* Mobile Responsive */
+@media (max-width: 768px) {
+  .page {
+    padding: 16px;
+    padding-bottom: 80px;
+  }
+
+  .page-header h1 {
+    font-size: 24px;
+  }
+
+  .page-header p {
+    font-size: 14px;
+  }
+
+  .section-title {
+    font-size: 18px;
+    margin: 24px 0 12px;
+  }
+
+  .rail {
+    gap: 12px;
+    margin: 0 -16px;
+    padding-left: 16px;
+    padding-right: 16px;
+  }
+
+  .player-modal {
+    padding: 0;
+  }
+
+  .player-content {
+    width: 100%;
+    height: 100%;
+    max-width: none;
+    border-radius: 0;
+  }
+
+  .player-info {
+    padding: 16px;
+  }
+
+  .player-info h2 {
+    font-size: 20px;
+  }
+}
+
+/* Tablet */
+@media (min-width: 769px) and (max-width: 1024px) {
+  .page {
+    padding: 20px;
+  }
+}
