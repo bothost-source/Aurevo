@@ -66,32 +66,38 @@ export function AuthProvider({ children }) {
       async signUp({ email, password, username, country, language }) {
         setLoading(true);
         setError(null);
+        
         try {
           // Step 1: Create Firebase auth user
           const cred = await createUserWithEmailAndPassword(auth, email, password);
           
-          // Step 2: Save profile to backend (non-blocking if it fails)
+          // Step 2: Save profile to backend (don't block on failure)
           try {
             await saveProfile({ username, country, language });
             setProfile({ username, country, language });
           } catch (profileErr) {
             console.warn("Profile save failed, but account created:", profileErr);
-            // Don't throw - account is created, profile can be updated later
+            // Set basic profile so user isn't stuck
+            setProfile({ username, country, language });
           }
           
           return cred.user;
         } catch (e) {
-          // Handle specific Firebase errors
+          console.error("Signup error:", e);
+          
+          // Handle specific Firebase errors with clear messages
           if (e.code === "auth/email-already-in-use") {
-            setError("That email is already registered. Try signing in instead.");
+            setError("This email is already registered. Try signing in instead.");
           } else if (e.code === "auth/weak-password") {
-            setError("Choose a stronger password (at least 6 characters).");
+            setError("Password is too weak. Use at least 6 characters with mix of letters and numbers.");
           } else if (e.code === "auth/invalid-email") {
             setError("Please enter a valid email address.");
           } else if (e.code === "auth/network-request-failed") {
-            setError("Network error. Check your internet connection.");
+            setError("Network error. Check your internet connection and try again.");
+          } else if (e.code === "auth/too-many-requests") {
+            setError("Too many attempts. Please wait a moment and try again.");
           } else {
-            setError(mapFirebaseError(e));
+            setError("Account creation failed. Please try again.");
           }
           throw e;
         } finally {
@@ -118,11 +124,32 @@ export function useAuth() {
 
 function mapFirebaseError(e) {
   const code = e?.code || "";
-  if (code.includes("wrong-password") || code.includes("invalid-credential")) return "Incorrect email or password.";
-  if (code.includes("user-not-found")) return "No account found with that email.";
-  if (code.includes("email-already-in-use")) return "That email is already registered. Try signing in.";
-  if (code.includes("weak-password")) return "Choose a stronger password (at least 6 characters).";
-  if (code.includes("popup-closed-by-user")) return "Google sign-in was cancelled.";
-  if (code.includes("network-request-failed")) return "Network error. Check your connection.";
+  
+  // Auth errors
+  if (code.includes("wrong-password") || code.includes("invalid-credential")) {
+    return "Incorrect email or password.";
+  }
+  if (code.includes("user-not-found")) {
+    return "No account found with that email.";
+  }
+  if (code.includes("email-already-in-use")) {
+    return "This email is already registered. Try signing in.";
+  }
+  if (code.includes("weak-password")) {
+    return "Password is too weak. Use at least 6 characters.";
+  }
+  if (code.includes("invalid-email")) {
+    return "Please enter a valid email address.";
+  }
+  if (code.includes("popup-closed-by-user")) {
+    return "Google sign-in was cancelled.";
+  }
+  if (code.includes("network-request-failed")) {
+    return "Network error. Check your connection.";
+  }
+  if (code.includes("too-many-requests")) {
+    return "Too many attempts. Please wait and try again.";
+  }
+  
   return "Something went wrong. Please try again.";
 }
