@@ -1,0 +1,172 @@
+.download-button {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+  width: 100%;
+  max-width: 280px;
+}
+
+.download-trigger {
+  position: relative;
+  width: 80px;
+  height: 80px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: #4ade80;
+  transition: transform 0.2s, color 0.2s;
+}
+
+.download-trigger:hover:not(:disabled) {
+  transform: scale(1.05);
+  color: #86efac;
+}
+
+.download-trigger:disabled {
+  cursor: default;
+}
+
+.download-ring,
+.download-parachute,
+.download-checkmark {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+
+.download-ring {
+  filter: drop-shadow(0 0 10px rgba(74, 222, 128, 0.3));
+}
+
+.download-parachute {
+  opacity: 0;
+  transform: scale(0) translateY(-20px);
+  filter: drop-shadow(0 0 15px rgba(74, 222, 128, 0.4));
+}
+
+.download-checkmark {
+  opacity: 0;
+  transform: scale(0);
+  filter: drop-shadow(0 0 20px rgba(74, 222, 128, 0.5));
+}
+
+/* Progress Container */
+.download-progress-container {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.download-info {
+  display: flex;
+  justify-content: space-between;
+  font-size: 12px;
+  color: #94a3b8;
+}
+
+.download-filename {
+  font-weight: 500;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.download-filesize {
+  color: #64748b;
+}
+
+.download-progress-track {
+  width: 100%;
+  height: 6px;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 3px;
+  overflow: hidden;
+}
+
+.download-progress-fill {
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, #4ade80, #22c55e);
+  border-radius: 3px;
+  transform-origin: left;
+  transform: scaleX(0);
+  transition: transform 0.3s ease;
+  box-shadow: 0 0 10px rgba(74, 222, 128, 0.3);
+}
+
+.download-status {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  font-size: 12px;
+  min-height: 20px;
+}
+
+.download-percent {
+  font-weight: 600;
+  color: #4ade80;
+  font-variant-numeric: tabular-nums;
+}
+
+.download-speed {
+  color: #64748b;
+  font-variant-numeric: tabular-nums;
+}
+
+.download-cancel {
+  background: none;
+  border: none;
+  color: #f87171;
+  font-size: 12px;
+  cursor: pointer;
+  padding: 4px 8px;
+  border-radius: 4px;
+  transition: background 0.2s;
+}
+
+.download-cancel:hover {
+  background: rgba(248, 113, 113, 0.1);
+}
+
+.download-complete-text {
+  color: #4ade80;
+  font-weight: 600;
+}
+
+.download-error-text {
+  color: #f87171;
+  font-weight: 600;
+}
+
+/* States */
+.download-button.downloading .download-trigger {
+  color: #4ade80;
+}
+
+.download-button.complete .download-trigger {
+  color: #4ade80;
+}
+
+.download-button.error .download-trigger {
+  color: #f87171;
+}
+
+/* Compact variant for cards */
+.download-button.compact {
+  max-width: none;
+  flex-direction: row;
+  gap: 12px;
+}
+
+.download-button.compact .download-trigger {
+  width: 40px;
+  height: 40px;
+}
+
+.download-button.compact .download-progress-container {
+  flex: 1;
+}
