@@ -48,14 +48,64 @@
 }
 
 .carousel__art {
+  position: relative;
   width: 100%;
   height: 100%;
   display: flex;
   align-items: flex-end;
   padding: 14px;
+  overflow: hidden;
+}
+
+/* Real movie backdrop image */
+.carousel__image {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.carousel__image.loaded {
+  opacity: 1;
+}
+
+/* Loading skeleton */
+.carousel__skeleton {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(90deg, var(--glass-fill) 25%, var(--glass-border-strong) 50%, var(--glass-fill) 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
+}
+
+@keyframes shimmer {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
+/* Fallback gradient when no image */
+.carousel__fallback {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: flex-end;
+  padding: 14px;
+}
+
+/* Dark overlay for text readability on images */
+.carousel__overlay {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(to top, rgba(8, 10, 14, 0.8) 0%, transparent 50%);
+  pointer-events: none;
 }
 
 .carousel__art-title {
+  position: relative;
+  z-index: 2;
   font-family: var(--font-display);
   font-size: 1.05rem;
   color: rgba(255, 255, 255, 0.85);
@@ -69,6 +119,7 @@
   background: linear-gradient(to top, rgba(8, 10, 14, 0.92), transparent);
   text-align: left;
   color: var(--ink-000);
+  z-index: 3;
 }
 
 .carousel__watch {
@@ -100,6 +151,12 @@
   font-size: 1rem;
   cursor: pointer;
   padding: 6px;
+  transition: color 0.2s, transform 0.2s;
+}
+
+.carousel__transport button:hover {
+  color: var(--ink-000);
+  transform: scale(1.1);
 }
 
 .carousel__play {
@@ -113,6 +170,10 @@
   justify-content: center;
 }
 
+.carousel__play:hover {
+  transform: scale(1.15) !important;
+}
+
 .carousel__now {
   display: flex;
   flex-direction: column;
@@ -121,8 +182,114 @@
 }
 .carousel__now span { color: var(--ink-500); font-size: 0.7rem; }
 
+/* ============================================
+   MOBILE RESPONSIVE
+   ============================================ */
+
 @media (max-width: 560px) {
-  .carousel__card { width: 150px; height: 212px; }
-  .carousel__card.is-center { width: 180px; height: 254px; }
-  .carousel__stage { height: 270px; }
+  .carousel {
+    gap: 16px;
+    padding: 24px 0 16px;
+  }
+  
+  .carousel__stage {
+    height: 240px;
+  }
+  
+  .carousel__card {
+    width: 140px;
+    height: 200px;
+    transform: translate(-50%, -50%)
+      translateX(calc(var(--offset) * 100px))
+      scale(calc(1 - 0.12 * var(--abs-offset)))
+      rotateY(calc(var(--offset) * -8deg));
+  }
+  
+  .carousel__card.is-center {
+    width: 160px;
+    height: 228px;
+  }
+  
+  .carousel__art {
+    padding: 10px;
+  }
+  
+  .carousel__art-title {
+    font-size: 0.85rem;
+  }
+  
+  .carousel__meta {
+    padding: 10px 12px 12px;
+  }
+  
+  .carousel__watch {
+    font-size: 0.65rem;
+    padding: 4px 8px;
+    margin-bottom: 6px;
+  }
+  
+  .carousel__row strong {
+    font-size: 0.85rem;
+  }
+  
+  .carousel__sub {
+    font-size: 0.68rem;
+  }
+  
+  .carousel__transport {
+    gap: 10px;
+    padding: 8px 14px;
+  }
+  
+  .carousel__transport button {
+    font-size: 0.9rem;
+    padding: 4px;
+  }
+  
+  .carousel__play {
+    width: 30px;
+    height: 30px;
+  }
+  
+  .carousel__now {
+    font-size: 0.72rem;
+  }
+  
+  .carousel__now span {
+    font-size: 0.65rem;
+  }
+}
+
+/* Tablet adjustments */
+@media (min-width: 561px) and (max-width: 768px) {
+  .carousel__stage {
+    height: 280px;
+  }
+  
+  .carousel__card {
+    width: 170px;
+    height: 240px;
+    transform: translate(-50%, -50%)
+      translateX(calc(var(--offset) * 120px))
+      scale(calc(1 - 0.13 * var(--abs-offset)))
+      rotateY(calc(var(--offset) * -9deg));
+  }
+  
+  .carousel__card.is-center {
+    width: 200px;
+    height: 280px;
+  }
+}
+
+/* Touch improvements */
+@media (hover: none) {
+  .carousel__card {
+    /* Larger touch targets on mobile */
+    cursor: default;
+  }
+  
+  .carousel__transport button {
+    min-height: 44px;
+    min-width: 44px;
+  }
 }
