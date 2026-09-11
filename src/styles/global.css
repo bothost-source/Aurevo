@@ -46,6 +46,7 @@
   overflow-x: auto;
   padding-bottom: 8px;
   scrollbar-width: thin;
+  -webkit-overflow-scrolling: touch;
 }
 
 .grid {
@@ -113,3 +114,281 @@
 .helper-text { font-size: 0.78rem; color: var(--ink-500); }
 .error-text { font-size: 0.78rem; color: var(--bad-500); }
 .success-text { font-size: 0.78rem; color: var(--good-500); }
+
+/* ============================================
+   MOBILE RESPONSIVE FIXES
+   ============================================ */
+
+/* Touch improvements - prevent zoom on iOS */
+@media (max-width: 768px) {
+  input, select, textarea {
+    font-size: 16px !important;
+  }
+  
+  button, a, [role="button"] {
+    min-height: 44px;
+    min-width: 44px;
+  }
+}
+
+/* Mobile layout adjustments */
+@media (max-width: 768px) {
+  .app-shell {
+    padding-bottom: 0; /* Remove padding, bottom nav will handle it */
+  }
+  
+  .page {
+    padding: 20px 16px;
+    padding-bottom: 100px; /* Space for bottom nav */
+  }
+  
+  .page-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+    margin-bottom: 20px;
+  }
+  
+  .page-header h1 {
+    font-size: 1.6rem;
+  }
+  
+  .page-header p {
+    font-size: 0.9rem;
+  }
+  
+  .section-title {
+    font-size: 1.1rem;
+    margin: 24px 0 12px;
+  }
+  
+  .rail {
+    gap: 12px;
+    margin: 0 -16px;
+    padding-left: 16px;
+    padding-right: 16px;
+    scroll-snap-type: x mandatory;
+  }
+  
+  .rail > * {
+    scroll-snap-align: start;
+    flex-shrink: 0;
+  }
+  
+  .grid {
+    grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+    gap: 12px;
+  }
+  
+  .btn {
+    padding: 14px 20px; /* Larger touch target */
+  }
+}
+
+/* Tablet adjustments */
+@media (min-width: 769px) and (max-width: 1024px) {
+  .page {
+    padding: 32px 20px;
+  }
+  
+  .grid {
+    grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+  }
+}
+
+/* Hide scrollbar but keep functionality on mobile */
+@media (max-width: 768px) {
+  .rail::-webkit-scrollbar {
+    display: none;
+  }
+  
+  .rail {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+}
+
+/* Safe area for notched phones */
+@supports (padding: max(0px)) {
+  @media (max-width: 768px) {
+    .page {
+      padding-left: max(16px, env(safe-area-inset-left));
+      padding-right: max(16px, env(safe-area-inset-right));
+    }
+  }
+}
+
+/* Loading spinner utility */
+.loading-spinner {
+  width: 48px;
+  height: 48px;
+  border: 4px solid var(--glass-border-strong);
+  border-top-color: var(--signal-400);
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+/* Loading container */
+.loading-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 400px;
+  gap: 16px;
+}
+
+.loading-container p {
+  color: var(--ink-300);
+}
+
+/* Error container */
+.error-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 400px;
+  gap: 16px;
+  text-align: center;
+}
+
+.error-container p {
+  color: var(--bad-500);
+  font-size: 1rem;
+}
+
+/* Player modal */
+.player-modal {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.95);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: 20px;
+}
+
+.player-content {
+  position: relative;
+  width: 100%;
+  max-width: 900px;
+  background: var(--glass-fill);
+  border-radius: var(--r-md);
+  overflow: hidden;
+  border: 1px solid var(--glass-border-strong);
+}
+
+.player-close {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: rgba(0, 0, 0, 0.7);
+  border: none;
+  color: #fff;
+  font-size: 24px;
+  cursor: pointer;
+  z-index: 10;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.2s;
+}
+
+.player-close:hover {
+  background: rgba(0, 0, 0, 0.9);
+}
+
+.player-video-container {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 16/9;
+  background: #000;
+}
+
+.player-video-container video {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+.player-placeholder {
+  position: relative;
+  width: 100%;
+  height: 100%;
+}
+
+.player-placeholder img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.player-overlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.7);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.player-overlay p {
+  color: var(--ink-300);
+  font-size: 1rem;
+}
+
+.player-info {
+  padding: 24px;
+}
+
+.player-info h2 {
+  font-family: var(--font-display);
+  font-size: 1.5rem;
+  margin: 0 0 8px;
+  color: var(--ink-000);
+}
+
+.player-meta {
+  font-size: 0.85rem;
+  color: var(--ink-300);
+  margin: 0 0 16px;
+}
+
+.player-synopsis {
+  font-size: 0.95rem;
+  line-height: 1.6;
+  color: var(--ink-100);
+  margin: 0;
+}
+
+/* Mobile player adjustments */
+@media (max-width: 768px) {
+  .player-modal {
+    padding: 0;
+  }
+  
+  .player-content {
+    width: 100%;
+    height: 100%;
+    max-width: none;
+    border-radius: 0;
+    border: none;
+  }
+  
+  .player-info {
+    padding: 16px;
+  }
+  
+  .player-info h2 {
+    font-size: 1.2rem;
+  }
+}
