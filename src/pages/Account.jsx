@@ -1,5 +1,6 @@
 import { Link } from "react-router-dom";
 import { useAuth } from "../context/AuthContext.jsx";
+import "./Account.css";
 
 export default function Account() {
   const { user, signOut } = useAuth();
@@ -13,7 +14,10 @@ export default function Account() {
             <p>Sign in to see your account, downloads and plan.</p>
           </div>
         </div>
-        <Link to="/sign-in" className="btn btn-primary">Sign in</Link>
+        <div className="account-signin-prompt">
+          <Link to="/sign-in" className="btn btn-primary">Sign in</Link>
+          <Link to="/sign-up" className="btn btn-ghost" style={{ marginLeft: 12 }}>Create account</Link>
+        </div>
       </div>
     );
   }
@@ -22,27 +26,60 @@ export default function Account() {
     <div className="page">
       <div className="page-header">
         <div>
-          <h1>{user.username}</h1>
-          <p>Country: {user.country} · Language: {user.language}</p>
+          <h1>{user.username || user.email}</h1>
+          <p>
+            {user.country && `Country: ${user.country}`}
+            {user.country && user.language && " · "}
+            {user.language && `Language: ${user.language}`}
+          </p>
         </div>
       </div>
 
-      <div className="grid" style={{ gridTemplateColumns: "repeat(auto-fill,minmax(220px,1fr))" }}>
-        <AccountLink to="/settings" title="Settings" desc="Language, country, playback quality" />
-        <AccountLink to="/payments" title="Plan & billing" desc="Manage your subscription" />
-        <AccountLink to="/developer" title="Developer API" desc="Manage your Aurevo API keys" />
+      {/* User Stats */}
+      <div className="account-stats">
+        <div className="stat-card glass">
+          <span className="stat-value">0</span>
+          <span className="stat-label">Movies Watched</span>
+        </div>
+        <div className="stat-card glass">
+          <span className="stat-value">0</span>
+          <span className="stat-label">Songs Played</span>
+        </div>
+        <div className="stat-card glass">
+          <span className="stat-value">0</span>
+          <span className="stat-label">Downloads</span>
+        </div>
       </div>
 
-      <button className="btn btn-ghost" style={{ marginTop: 28 }} onClick={signOut}>Sign out</button>
+      {/* Quick Links */}
+      <h2 className="section-title">Quick Access</h2>
+      <div className="account-links">
+        <AccountLink to="/settings" title="Settings" desc="Language, country, playback quality" icon="⚙️" />
+        <AccountLink to="/payments" title="Plan & billing" desc="Manage your subscription" icon="💳" />
+        <AccountLink to="/developer" title="Developer API" desc="Manage your Aurevo API keys" icon="🔑" />
+      </div>
+
+      {/* Sign Out */}
+      <div className="account-actions">
+        <button className="btn btn-ghost btn-signout" onClick={signOut}>
+          Sign out
+        </button>
+      </div>
     </div>
   );
 }
 
-function AccountLink({ to, title, desc }) {
+function AccountLink({ to, title, desc, icon }) {
   return (
-    <Link to={to} className="glass" style={{ display: "block", padding: 20, textDecoration: "none" }}>
-      <strong style={{ color: "var(--ink-000)" }}>{title}</strong>
-      <p style={{ color: "var(--ink-300)", fontSize: "0.85rem", margin: "6px 0 0" }}>{desc}</p>
+    <Link to={to} className="account-link glass">
+      <span className="account-link-icon">{icon}</span>
+      <div className="account-link-content">
+        <strong>{title}</strong>
+        <p>{desc}</p>
+      </div>
+      <svg className="account-link-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+        <path d="M9 18l6-6-6-6" />
+      </svg>
     </Link>
   );
 }
