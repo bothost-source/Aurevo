@@ -1,0 +1,215 @@
+.payments-container {
+  max-width: 800px;
+}
+
+.plan-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 16px;
+  margin-bottom: 32px;
+}
+
+.plan-card {
+  position: relative;
+  padding: 24px;
+  background: var(--glass-fill);
+  border: 2px solid var(--glass-border);
+  border-radius: var(--r-lg);
+  cursor: pointer;
+  text-align: left;
+  transition: all 0.2s;
+}
+
+.plan-card:hover {
+  border-color: var(--ink-500);
+}
+
+.plan-card.selected {
+  border-color: var(--aurora-400);
+  box-shadow: 0 0 0 3px var(--aurora-glow), 0 10px 30px -10px var(--aurora-glow);
+}
+
+.plan-card.popular::before {
+  content: "Most Popular";
+  position: absolute;
+  top: -12px;
+  left: 50%;
+  transform: translateX(-50%);
+  padding: 4px 12px;
+  background: var(--signal-400);
+  color: var(--stage-950);
+  font-size: 0.7rem;
+  font-weight: 700;
+  border-radius: var(--r-pill);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.plan-name {
+  display: block;
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--ink-000);
+  margin-bottom: 8px;
+}
+
+.plan-price {
+  display: block;
+  font-family: var(--font-display);
+  font-size: 2rem;
+  font-weight: 700;
+  color: var(--signal-400);
+  margin-bottom: 4px;
+}
+
+.plan-billing {
+  display: block;
+  font-size: 0.8rem;
+  color: var(--ink-500);
+}
+
+/* Payment Method */
+.method-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 16px;
+  margin-bottom: 24px;
+}
+
+.method-card {
+  padding: 20px;
+  background: var(--glass-fill);
+  border: 2px solid var(--glass-border);
+  border-radius: var(--r-lg);
+  cursor: pointer;
+  text-align: left;
+  transition: all 0.2s;
+}
+
+.method-card:hover {
+  border-color: var(--ink-500);
+}
+
+.method-card.selected {
+  border-color: var(--aurora-400);
+  box-shadow: 0 0 0 3px var(--aurora-glow);
+}
+
+.method-title {
+  display: block;
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--ink-000);
+  margin-bottom: 4px;
+}
+
+.method-desc {
+  display: block;
+  font-size: 0.82rem;
+  color: var(--ink-300);
+}
+
+/* Checkout Section */
+.checkout-section {
+  padding: 24px;
+  background: var(--glass-fill);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--r-lg);
+  margin-bottom: 32px;
+}
+
+.checkout-section h3 {
+  font-family: var(--font-display);
+  font-size: 1.1rem;
+  color: var(--ink-000);
+  margin: 0 0 16px;
+}
+
+/* USDT Payment */
+.usdt-address {
+  display: block;
+  padding: 16px;
+  background: rgba(0, 0, 0, 0.3);
+  border: 1px solid var(--glass-border-strong);
+  border-radius: var(--r-sm);
+  font-family: monospace;
+  font-size: 0.9rem;
+  color: var(--ink-000);
+  word-break: break-all;
+  margin: 12px 0;
+  user-select: all;
+}
+
+.usdt-warning {
+  padding: 12px 16px;
+  background: rgba(251, 191, 36, 0.1);
+  border: 1px solid rgba(251, 191, 36, 0.3);
+  border-radius: var(--r-sm);
+  color: #fbbf24;
+  font-size: 0.85rem;
+  margin: 16px 0;
+}
+
+.usdt-amount {
+  color: var(--signal-400);
+  font-weight: 700;
+}
+
+/* Payment History */
+.payment-history {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.payment-history th {
+  text-align: left;
+  padding: 12px;
+  color: var(--ink-500);
+  font-size: 0.78rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.payment-history td {
+  padding: 16px 12px;
+  font-size: 0.85rem;
+  color: var(--ink-100);
+  border-top: 1px solid var(--glass-border);
+}
+
+.status-badge {
+  display: inline-block;
+  padding: 4px 12px;
+  border-radius: var(--r-pill);
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
+.status-badge.confirmed {
+  background: rgba(74, 222, 128, 0.1);
+  color: var(--good-500);
+}
+
+.status-badge.pending {
+  background: rgba(251, 191, 36, 0.1);
+  color: #fbbf24;
+}
+
+.status-badge.failed {
+  background: rgba(239, 68, 68, 0.1);
+  color: var(--bad-500);
+}
+
+/* Mobile */
+@media (max-width: 768px) {
+  .plan-grid,
+  .method-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .payment-history {
+    display: block;
+    overflow-x: auto;
+  }
+}
