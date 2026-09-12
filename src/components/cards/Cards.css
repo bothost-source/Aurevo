@@ -273,11 +273,148 @@
   margin: 0;
 }
 
+/* Video Card */
+.video-card {
+  width: 280px;
+  cursor: pointer;
+  transition: transform 0.2s;
+}
+
+.video-card:hover {
+  transform: translateY(-4px);
+}
+
+.video-card__thumbnail-container {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 16/9;
+  border-radius: 12px;
+  overflow: hidden;
+  background: #1e293b;
+}
+
+.video-card__skeleton {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(90deg, #1e293b 25%, #334155 50%, #1e293b 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
+}
+
+.video-card__placeholder {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, #334155 0%, #1e293b 100%);
+}
+
+.video-card__placeholder span {
+  font-size: 48px;
+  font-weight: 700;
+  color: #475569;
+}
+
+.video-card__thumbnail {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  opacity: 0;
+  transition: opacity 0.3s;
+}
+
+.video-card__thumbnail.loaded {
+  opacity: 1;
+}
+
+.video-card__overlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.3);
+  opacity: 0;
+  transition: opacity 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.video-card:hover .video-card__overlay {
+  opacity: 1;
+}
+
+.video-card__play-btn {
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.95);
+  border: none;
+  color: #0f172a;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform 0.2s;
+}
+
+.video-card__play-btn:hover {
+  transform: scale(1.1);
+}
+
+.video-card__play-btn svg {
+  width: 28px;
+  height: 28px;
+  margin-left: 2px;
+}
+
+.video-card__duration {
+  position: absolute;
+  bottom: 12px;
+  right: 12px;
+  padding: 4px 8px;
+  background: rgba(0, 0, 0, 0.8);
+  border-radius: 4px;
+  font-size: 12px;
+  font-weight: 600;
+  color: #fff;
+}
+
+.video-card__info {
+  padding: 12px 4px;
+}
+
+.video-card__title {
+  font-size: 14px;
+  font-weight: 600;
+  color: #fff;
+  margin: 0 0 4px;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.video-card__channel {
+  font-size: 12px;
+  color: #94a3b8;
+  margin: 0 0 2px;
+}
+
+.video-card__views {
+  font-size: 11px;
+  color: #64748b;
+  margin: 0;
+}
+
 /* Mobile Responsive */
 @media (max-width: 768px) {
   .movie-card,
   .music-card {
     width: 140px;
+  }
+
+  .video-card {
+    width: 100%;
   }
 
   .movie-card__play-btn,
@@ -290,5 +427,15 @@
   .music-card__play-btn svg {
     width: 20px;
     height: 20px;
+  }
+
+  .video-card__play-btn {
+    width: 48px;
+    height: 48px;
+  }
+
+  .video-card__play-btn svg {
+    width: 24px;
+    height: 24px;
   }
 }
