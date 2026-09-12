@@ -1,9 +1,48 @@
 @import "./tokens.css";
 
-.app-shell {
-  min-height: 100%;
-  padding-bottom: 104px; /* leave room for the floating nav */
+/* ============================================
+   BASE STYLES
+   ============================================ */
+
+* {
+  -webkit-tap-highlight-color: transparent;
+  box-sizing: border-box;
 }
+
+html {
+  font-size: 16px;
+  scroll-behavior: smooth;
+}
+
+body {
+  margin: 0;
+  padding: 0;
+  background: #0a0e14;
+  color: #fff;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
+    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
+    sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  overflow-x: hidden;
+}
+
+/* ============================================
+   APP SHELL
+   ============================================ */
+
+.app-shell {
+  min-height: 100vh;
+  position: relative;
+}
+
+.main-content {
+  padding-bottom: 0;
+}
+
+/* ============================================
+   PAGE LAYOUT
+   ============================================ */
 
 .page {
   max-width: 1180px;
@@ -40,6 +79,16 @@
   margin: 36px 0 14px;
 }
 
+/* ============================================
+   GRID & RAIL LAYOUTS
+   ============================================ */
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  gap: 18px;
+}
+
 .rail {
   display: flex;
   gap: 16px;
@@ -49,11 +98,27 @@
   -webkit-overflow-scrolling: touch;
 }
 
-.grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
-  gap: 18px;
+.rail::-webkit-scrollbar {
+  height: 6px;
 }
+
+.rail::-webkit-scrollbar-track {
+  background: var(--glass-fill);
+  border-radius: 3px;
+}
+
+.rail::-webkit-scrollbar-thumb {
+  background: var(--glass-border-strong);
+  border-radius: 3px;
+}
+
+.rail::-webkit-scrollbar-thumb:hover {
+  background: var(--ink-500);
+}
+
+/* ============================================
+   BUTTONS
+   ============================================ */
 
 .btn {
   display: inline-flex;
@@ -66,24 +131,44 @@
   font-weight: 600;
   font-size: 0.95rem;
   cursor: pointer;
-  transition: transform var(--dur-fast) var(--ease-out), box-shadow var(--dur-fast) var(--ease-out), background var(--dur-fast);
+  transition: transform var(--dur-fast) var(--ease-out), 
+              box-shadow var(--dur-fast) var(--ease-out), 
+              background var(--dur-fast);
+  text-decoration: none;
 }
-.btn:active { transform: scale(0.98); }
-.btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+.btn:active { 
+  transform: scale(0.98); 
+}
+
+.btn:disabled { 
+  opacity: 0.5; 
+  cursor: not-allowed; 
+}
 
 .btn-primary {
   background: linear-gradient(135deg, var(--signal-400), var(--signal-500));
   color: #201404;
   box-shadow: 0 8px 24px -8px var(--signal-glow);
 }
-.btn-primary:hover { box-shadow: 0 10px 30px -6px var(--signal-glow); }
+
+.btn-primary:hover:not(:disabled) { 
+  box-shadow: 0 10px 30px -6px var(--signal-glow); 
+}
 
 .btn-ghost {
   background: var(--glass-fill);
   border-color: var(--glass-border-strong);
   color: var(--ink-100);
 }
-.btn-ghost:hover { border-color: var(--aurora-400); }
+
+.btn-ghost:hover { 
+  border-color: var(--aurora-400); 
+}
+
+/* ============================================
+   FORM FIELDS
+   ============================================ */
 
 .field {
   display: flex;
@@ -97,7 +182,8 @@
   color: var(--ink-300);
 }
 
-.field input, .field select {
+.field input, 
+.field select {
   background: rgba(10, 14, 20, 0.6);
   border: 1px solid var(--glass-border-strong);
   border-radius: var(--r-sm);
@@ -106,119 +192,119 @@
   color: var(--ink-000);
   transition: border-color var(--dur-fast);
 }
-.field input:focus, .field select:focus {
+
+.field input:focus, 
+.field select:focus {
+  outline: none;
   border-color: var(--aurora-400);
   box-shadow: 0 0 0 3px var(--aurora-glow);
 }
 
-.helper-text { font-size: 0.78rem; color: var(--ink-500); }
-.error-text { font-size: 0.78rem; color: var(--bad-500); }
-.success-text { font-size: 0.78rem; color: var(--good-500); }
+.field input::placeholder {
+  color: var(--ink-500);
+}
 
 /* ============================================
-   MOBILE RESPONSIVE FIXES
+   TEXT HELPERS
    ============================================ */
 
-/* Touch improvements - prevent zoom on iOS */
-@media (max-width: 768px) {
-  input, select, textarea {
-    font-size: 16px !important;
-  }
-  
-  button, a, [role="button"] {
-    min-height: 44px;
-    min-width: 44px;
-  }
+.helper-text { 
+  font-size: 0.78rem; 
+  color: var(--ink-500); 
 }
 
-/* Mobile layout adjustments */
-@media (max-width: 768px) {
-  .app-shell {
-    padding-bottom: 0; /* Remove padding, bottom nav will handle it */
-  }
-  
-  .page {
-    padding: 20px 16px;
-    padding-bottom: 100px; /* Space for bottom nav */
-  }
-  
-  .page-header {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 8px;
-    margin-bottom: 20px;
-  }
-  
-  .page-header h1 {
-    font-size: 1.6rem;
-  }
-  
-  .page-header p {
-    font-size: 0.9rem;
-  }
-  
-  .section-title {
-    font-size: 1.1rem;
-    margin: 24px 0 12px;
-  }
-  
-  .rail {
-    gap: 12px;
-    margin: 0 -16px;
-    padding-left: 16px;
-    padding-right: 16px;
-    scroll-snap-type: x mandatory;
-  }
-  
-  .rail > * {
-    scroll-snap-align: start;
-    flex-shrink: 0;
-  }
-  
-  .grid {
-    grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
-    gap: 12px;
-  }
-  
-  .btn {
-    padding: 14px 20px; /* Larger touch target */
-  }
+.error-text { 
+  font-size: 0.78rem; 
+  color: var(--bad-500); 
 }
 
-/* Tablet adjustments */
-@media (min-width: 769px) and (max-width: 1024px) {
-  .page {
-    padding: 32px 20px;
-  }
-  
-  .grid {
-    grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
-  }
+.success-text { 
+  font-size: 0.78rem; 
+  color: var(--good-500); 
 }
 
-/* Hide scrollbar but keep functionality on mobile */
-@media (max-width: 768px) {
-  .rail::-webkit-scrollbar {
-    display: none;
-  }
-  
-  .rail {
-    -ms-overflow-style: none;
-    scrollbar-width: none;
-  }
+/* ============================================
+   SEARCH COMPONENTS
+   ============================================ */
+
+.search-input-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
 }
 
-/* Safe area for notched phones */
-@supports (padding: max(0px)) {
-  @media (max-width: 768px) {
-    .page {
-      padding-left: max(16px, env(safe-area-inset-left));
-      padding-right: max(16px, env(safe-area-inset-right));
-    }
-  }
+.search-icon {
+  position: absolute;
+  left: 16px;
+  width: 20px;
+  height: 20px;
+  color: var(--ink-500);
+  pointer-events: none;
 }
 
-/* Loading spinner utility */
+.search-input {
+  width: 100%;
+  padding: 16px 48px 16px 48px;
+  background: var(--glass-fill);
+  border: 1px solid var(--glass-border-strong);
+  border-radius: var(--r-md);
+  color: var(--ink-000);
+  font-size: 1rem;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.search-input:focus {
+  outline: none;
+  border-color: var(--aurora-400);
+  box-shadow: 0 0 0 3px var(--aurora-glow);
+}
+
+.search-input::placeholder {
+  color: var(--ink-500);
+}
+
+.clear-btn {
+  position: absolute;
+  right: 12px;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: var(--glass-border-strong);
+  border: none;
+  color: var(--ink-300);
+  font-size: 20px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.2s, color 0.2s;
+}
+
+.clear-btn:hover {
+  background: var(--bad-500);
+  color: #fff;
+}
+
+/* Page search containers */
+.movies-search,
+.music-search,
+.videos-search {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 32px;
+  max-width: 640px;
+}
+
+.movies-search .search-input-wrapper,
+.music-search .search-input-wrapper,
+.videos-search .search-input-wrapper {
+  flex: 1;
+}
+
+/* ============================================
+   LOADING & ERROR STATES
+   ============================================ */
+
 .loading-spinner {
   width: 48px;
   height: 48px;
@@ -232,21 +318,7 @@
   to { transform: rotate(360deg); }
 }
 
-/* Loading container */
-.loading-container {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  min-height: 400px;
-  gap: 16px;
-}
-
-.loading-container p {
-  color: var(--ink-300);
-}
-
-/* Error container */
+.loading-container,
 .error-container {
   display: flex;
   flex-direction: column;
@@ -257,12 +329,23 @@
   text-align: center;
 }
 
+.loading-container p {
+  color: var(--ink-300);
+}
+
 .error-container p {
   color: var(--bad-500);
   font-size: 1rem;
 }
 
-/* Player modal */
+.error-container .btn {
+  margin-top: 8px;
+}
+
+/* ============================================
+   PLAYER MODAL
+   ============================================ */
+
 .player-modal {
   position: fixed;
   inset: 0;
@@ -370,12 +453,140 @@
   margin: 0;
 }
 
-/* Mobile player adjustments */
+/* ============================================
+   PAGINATION
+   ============================================ */
+
+.pagination {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 24px;
+  margin-top: 48px;
+}
+
+.page-info {
+  color: var(--ink-300);
+  font-size: 0.9rem;
+}
+
+/* ============================================
+   SCROLLBAR
+   ============================================ */
+
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--glass-fill);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--glass-border-strong);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--ink-500);
+}
+
+/* ============================================
+   MOBILE RESPONSIVE
+   ============================================ */
+
 @media (max-width: 768px) {
+  /* Touch improvements */
+  button, 
+  a, 
+  [role="button"] {
+    min-height: 44px;
+    min-width: 44px;
+  }
+
+  input, 
+  select, 
+  textarea {
+    font-size: 16px !important;
+  }
+
+  /* Layout */
+  .app-shell {
+    padding-bottom: 0;
+  }
+
+  .main-content {
+    padding-bottom: 80px;
+  }
+
+  .page {
+    padding: 20px 16px;
+    padding-bottom: 100px;
+  }
+
+  .page-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+    margin-bottom: 20px;
+  }
+
+  .page-header h1 {
+    font-size: 1.6rem;
+  }
+
+  .page-header p {
+    font-size: 0.9rem;
+  }
+
+  .section-title {
+    font-size: 1.1rem;
+    margin: 24px 0 12px;
+  }
+
+  /* Grid adjustments */
+  .grid {
+    grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+    gap: 12px;
+  }
+
+  /* Rail adjustments */
+  .rail {
+    gap: 12px;
+    margin: 0 -16px;
+    padding-left: 16px;
+    padding-right: 16px;
+    scroll-snap-type: x mandatory;
+  }
+
+  .rail > * {
+    scroll-snap-align: start;
+    flex-shrink: 0;
+  }
+
+  .rail::-webkit-scrollbar {
+    display: none;
+  }
+
+  .rail {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+
+  /* Search */
+  .movies-search,
+  .music-search,
+  .videos-search {
+    flex-direction: column;
+    max-width: 100%;
+  }
+
+  /* Player modal */
   .player-modal {
     padding: 0;
   }
-  
+
   .player-content {
     width: 100%;
     height: 100%;
@@ -383,12 +594,44 @@
     border-radius: 0;
     border: none;
   }
-  
+
   .player-info {
     padding: 16px;
   }
-  
+
   .player-info h2 {
     font-size: 1.2rem;
+  }
+
+  /* Pagination */
+  .pagination {
+    gap: 12px;
+    flex-wrap: wrap;
+  }
+
+  /* Buttons */
+  .btn {
+    padding: 14px 20px;
+  }
+}
+
+/* Tablet */
+@media (min-width: 769px) and (max-width: 1024px) {
+  .page {
+    padding: 32px 20px;
+  }
+
+  .grid {
+    grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+  }
+}
+
+/* Safe area for notched phones */
+@supports (padding: max(0px)) {
+  @media (max-width: 768px) {
+    .page {
+      padding-left: max(16px, env(safe-area-inset-left));
+      padding-right: max(16px, env(safe-area-inset-right));
+    }
   }
 }
