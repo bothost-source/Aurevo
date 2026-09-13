@@ -111,7 +111,7 @@ export default function ApiManagement() {
       <div className="page-header">
         <div>
           <h1>Developer API</h1>
-          <p>Build with Aurevo's movie and music data. Free tier: 100 requests/day.</p>
+          <p>Build with Aurevo's movie and music data. Free tier: 8 requests/day, capped at 50/month.</p>
         </div>
         <button 
           className="btn btn-primary" 
@@ -170,6 +170,7 @@ export default function ApiManagement() {
                 <th>Created</th>
                 <th>Tier</th>
                 <th>Today's Usage</th>
+                <th>This Month</th>
                 <th>Actions</th>
               </tr>
             </thead>
@@ -186,11 +187,22 @@ export default function ApiManagement() {
                   </td>
                   <td>
                     <div className="usage-display">
-                      <span>{key.usedToday || 0}/{key.limitPerDay || 100}</span>
+                      <span>{key.usedToday || 0}/{key.limitPerDay ?? "∞"}</span>
                       <div className="usage-bar">
                         <div 
                           className="usage-fill" 
-                          style={{ width: `${Math.min(((key.usedToday || 0) / (key.limitPerDay || 100)) * 100, 100)}%` }}
+                          style={{ width: `${key.limitPerDay ? Math.min(((key.usedToday || 0) / key.limitPerDay) * 100, 100) : 0}%` }}
+                        />
+                      </div>
+                    </div>
+                  </td>
+                  <td>
+                    <div className="usage-display">
+                      <span>{key.usedThisMonth || 0}/{key.limitPerMonth ?? "∞"}</span>
+                      <div className="usage-bar">
+                        <div
+                          className="usage-fill"
+                          style={{ width: `${key.limitPerMonth ? Math.min(((key.usedThisMonth || 0) / key.limitPerMonth) * 100, 100) : 0}%` }}
                         />
                       </div>
                     </div>
@@ -221,31 +233,31 @@ export default function ApiManagement() {
             <button 
               className="copy-btn"
               onClick={() => copyToClipboard(`curl -H "Authorization: Bearer YOUR_API_KEY" \\
-  ${API_BASE}/api/v1/movies/popular`)}
+  ${API_BASE}/api/v1/public/movies/popular`)}
             >
               Copy
             </button>
           </div>
           <pre>{`curl -H "Authorization: Bearer YOUR_API_KEY" \\
-  ${API_BASE}/api/v1/movies/popular`}</pre>
+  ${API_BASE}/api/v1/public/movies/popular`}</pre>
         </div>
 
         <h3>Available Endpoints</h3>
         <ul className="endpoints-list">
           <li>
-            <code>GET /api/v1/movies/popular</code>
+            <code>GET /api/v1/public/movies/popular</code>
             <span>Get trending movies</span>
           </li>
           <li>
-            <code>GET /api/v1/movies/search?q={"{query}"}</code>
+            <code>GET /api/v1/public/movies/search?q={"{query}"}</code>
             <span>Search movies</span>
           </li>
           <li>
-            <code>GET /api/v1/movies/{'{id}'}</code>
+            <code>GET /api/v1/public/movies/{'{id}'}</code>
             <span>Get movie details</span>
           </li>
           <li>
-            <code>GET /api/v1/music-videos/search?q={"{query}"}</code>
+            <code>GET /api/v1/public/music-videos/search?q={"{query}"}</code>
             <span>Search music videos</span>
           </li>
         </ul>
@@ -256,22 +268,26 @@ export default function ApiManagement() {
             <tr>
               <th>Tier</th>
               <th>Daily Limit</th>
+              <th>Monthly Cap</th>
               <th>Monthly Price</th>
             </tr>
           </thead>
           <tbody>
             <tr>
               <td>Free</td>
-              <td>100 requests</td>
+              <td>8 requests</td>
+              <td>50 requests</td>
               <td>$0</td>
             </tr>
             <tr>
               <td>Pro</td>
               <td>10,000 requests</td>
+              <td>300,000 requests</td>
               <td>$9.99</td>
             </tr>
             <tr>
               <td>Enterprise</td>
+              <td>Unlimited</td>
               <td>Unlimited</td>
               <td>Contact us</td>
             </tr>
