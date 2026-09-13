@@ -33,7 +33,19 @@ export default function DownloadButton({
 
   const startDownload = async () => {
     if (state !== "idle") return;
-    
+
+    // Nothing to fetch — most titles don't have a real downloadUrl yet
+    // (TMDb only provides metadata, not video files). Previously this
+    // fell straight into fetch(undefined), which silently tried to fetch
+    // the current page instead of failing cleanly.
+    if (!fileUrl) {
+      console.error("DownloadButton: no fileUrl provided, nothing to download.");
+      setState("error");
+      onError?.(new Error("This title isn't available for download yet."));
+      setTimeout(() => setState("idle"), 2000);
+      return;
+    }
+
     setState("downloading");
     cancelRef.current = false;
 
@@ -188,7 +200,14 @@ export default function DownloadButton({
     <div className={`download-button ${state}`}>
       <button 
         className="download-trigger"
-        onClick={startDownload}
+        onClick={(e) => {
+          // Stop this click from also bubbling up to a parent card's
+          // onClick (e.g. MovieCard's whole-card handlePlay) — without
+          // this, tapping the download button was also opening the
+          // player/modal underneath it at the same time.
+          e.stopPropagation();
+          startDownload();
+        }}
         disabled={state === "downloading"}
         aria-label={state === "downloading" ? "Downloading..." : "Download"}
       >
@@ -289,7 +308,7 @@ export default function DownloadButton({
               )}
               <button 
                 className="download-cancel"
-                onClick={cancelDownload}
+                onClick={(e) => { e.stopPropagation(); cancelDownload(); }}
                 aria-label="Cancel download"
               >
                 Cancel
