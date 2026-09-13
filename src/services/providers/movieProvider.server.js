@@ -1,20 +1,6 @@
-/**
- * Movie metadata provider adapter — wired for TMDb (The Movie Database).
- *
- * This file is written to run on a server/serverless function, NOT in the
- * React bundle — the whole point of a key pool is that the keys never reach
- * the browser. Wire this behind your own endpoint, e.g.
- * GET /api/v1/movies -> calls searchMovies() -> returns normalized JSON.
- *
- * Auth: TMDb's v4 Read Access Token (the long eyJ... string from
- * themoviedb.org/settings/api) goes straight into an Authorization: Bearer
- * header — no query-string key needed.
- */
+
 import { ApiKeyPool, fetchWithKeyPool } from "../apiKeyPool.js";
 
-// One TMDb v4 Read Access Token per env var: MTBP_API_KEY_1, MTBP_API_KEY_2, ...
-// Each token can come from a different TMDb account, so the pool spreads
-// requests across several independent quota buckets.
 const MOVIE_PROVIDER_BASE_URL = process.env.MTBP_BASE_URL || "https://api.themoviedb.org/3";
 const POSTER_BASE_URL = "https://image.tmdb.org/t/p/w500";
 const BACKDROP_BASE_URL = "https://image.tmdb.org/t/p/w1280";
@@ -26,16 +12,19 @@ const movieKeyPool = new ApiKeyPool(
   { cooldownMs: 60_000 }
 );
 
-// TMDb's search/list endpoints only return numeric genre_ids, not names —
-// this small cache fetches the id->name map once (it barely ever changes)
-// so normalizeMovieList can attach real genre names without a second round
-// trip per movie.
+// Small helper to attach the v3 api_key query param without double-adding
+// `?` when the base URL already has other query params.
+function withApiKey(url, key) {
+  const joiner = url.includes("?") ? "&" : "?";
+  return `${url}${joiner}api_key=${encodeURIComponent(key)}`;
+}
+
 let genreMapCache = null;
 async function getGenreMap() {
   if (genreMapCache) return genreMapCache;
   const res = await fetchWithKeyPool(movieKeyPool, (key) => ({
-    url: `${MOVIE_PROVIDER_BASE_URL}/genre/movie/list?language=en`,
-    init: { headers: { Authorization: `Bearer ${key}`, accept: "application/json" } },
+    url: withApiKey(`${MOVIE_PROVIDER_BASE_URL}/genre/movie/list?language=en`, key),
+    init: { headers: { accept: "application/json" } },
   }));
   const data = await res.json();
   genreMapCache = Object.fromEntries((data.genres ?? []).map((g) => [g.id, g.name]));
@@ -45,8 +34,11 @@ async function getGenreMap() {
 export async function searchMovies(query, { page = 1 } = {}) {
   const [res, genreMap] = await Promise.all([
     fetchWithKeyPool(movieKeyPool, (key) => ({
-      url: `${MOVIE_PROVIDER_BASE_URL}/search/movie?query=${encodeURIComponent(query)}&page=${page}&include_adult=false`,
-      init: { headers: { Authorization: `Bearer ${key}`, accept: "application/json" } },
+      url: withApiKey(
+        `${MOVIE_PROVIDER_BASE_URL}/search/movie?query=${encodeURIComponent(query)}&page=${page}&include_adult=false`,
+        key
+      ),
+      init: { headers: { accept: "application/json" } },
     })),
     getGenreMap(),
   ]);
@@ -58,8 +50,8 @@ export async function searchMovies(query, { page = 1 } = {}) {
 export async function getPopularMovies({ page = 1 } = {}) {
   const [res, genreMap] = await Promise.all([
     fetchWithKeyPool(movieKeyPool, (key) => ({
-      url: `${MOVIE_PROVIDER_BASE_URL}/movie/popular?page=${page}`,
-      init: { headers: { Authorization: `Bearer ${key}`, accept: "application/json" } },
+      url: withApiKey(`${MOVIE_PROVIDER_BASE_URL}/movie/popular?page=${page}`, key),
+      init: { headers: { accept: "application/json" } },
     })),
     getGenreMap(),
   ]);
@@ -69,8 +61,8 @@ export async function getPopularMovies({ page = 1 } = {}) {
 
 export async function getMovieById(id) {
   const res = await fetchWithKeyPool(movieKeyPool, (key) => ({
-    url: `${MOVIE_PROVIDER_BASE_URL}/movie/${encodeURIComponent(id)}?append_to_response=credits`,
-    init: { headers: { Authorization: `Bearer ${key}`, accept: "application/json" } },
+    url: withApiKey(`${MOVIE_PROVIDER_BASE_URL}/movie/${encodeURIComponent(id)}?append_to_response=credits`, key),
+    init: { headers: { accept: "application/json" } },
   }));
   const data = await res.json();
   return normalizeMovieDetail(data);
