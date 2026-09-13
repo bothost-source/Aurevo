@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { VideoCard } from "../components/cards/Cards.jsx";
+import { MusicCard } from "../components/cards/Cards.jsx";
 import { searchMusicVideos } from "../services/api.js";
 
 export default function MusicVideos() {
@@ -86,7 +86,7 @@ export default function MusicVideos() {
       {!loading && !error && (
         <div className="grid">
           {videos.map((video) => (
-            <VideoCard key={video.id} video={video} />
+            <MusicCard key={video.id} track={video} />
           ))}
         </div>
       )}
