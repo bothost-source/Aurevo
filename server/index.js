@@ -21,6 +21,8 @@ import {
   createApiKey,
   listApiKeysForUser,
   revokeApiKey,
+  findActiveApiKeyByRawKey,
+  checkAndIncrementApiKeyUsage,
 } from "./db.js";
 
 const app = express();
@@ -37,13 +39,14 @@ app.get("/healthz", (req, res) => {
   res.json({ status: "ok", time: new Date().toISOString() });
 });
 
-// ---------- Movies ----------
+// ---------- Movies (internal — used directly by the Aurevo frontend, no key) ----------
 
 app.get("/api/v1/movies/search", async (req, res) => {
   try {
     const { q = "", page = 1 } = req.query;
     res.json(await searchMovies(q, { page: Number(page) }));
   } catch (e) {
+    console.error("GET /api/v1/movies/search error:", e);
     res.status(502).json({ error: e.message });
   }
 });
@@ -53,6 +56,7 @@ app.get("/api/v1/movies/popular", async (req, res) => {
     const { page = 1 } = req.query;
     res.json(await getPopularMovies({ page: Number(page) }));
   } catch (e) {
+    console.error("GET /api/v1/movies/popular error:", e);
     res.status(502).json({ error: e.message });
   }
 });
@@ -61,17 +65,19 @@ app.get("/api/v1/movies/:id", async (req, res) => {
   try {
     res.json(await getMovieById(req.params.id));
   } catch (e) {
+    console.error("GET /api/v1/movies/:id error:", e);
     res.status(502).json({ error: e.message });
   }
 });
 
-// ---------- Music videos ----------
+// ---------- Music videos (internal — used directly by the Aurevo frontend, no key) ----------
 
 app.get("/api/v1/music-videos/search", async (req, res) => {
   try {
     const { q = "" } = req.query;
     res.json(await searchMusicVideos(q));
   } catch (e) {
+    console.error("GET /api/v1/music-videos/search error:", e);
     res.status(502).json({ error: e.message });
   }
 });
@@ -80,10 +86,24 @@ app.get("/api/v1/music-videos/search", async (req, res) => {
 
 app.post("/api/v1/profile", express.json(), requireAuth, async (req, res) => {
   try {
-    const { username, country, language } = req.body;
-    await upsertUserProfile(req.firebaseUser.uid, { username, country, language });
+    // NOTE: previously this only accepted username/country/language, which
+    // silently dropped the playback/download preferences Settings.jsx
+    // sends (streamingQuality, autoplay, subtitles, downloadWifiOnly) —
+    // the UI showed "Saved!" but nothing was actually persisted. Now all
+    // profile-shaped fields the client sends are merged in.
+    const { username, country, language, streamingQuality, autoplay, subtitles, downloadWifiOnly } = req.body;
+    await upsertUserProfile(req.firebaseUser.uid, {
+      username,
+      country,
+      language,
+      streamingQuality,
+      autoplay,
+      subtitles,
+      downloadWifiOnly,
+    });
     res.json({ ok: true });
   } catch (e) {
+    console.error("POST /api/v1/profile error:", e);
     res.status(500).json({ error: e.message });
   }
 });
@@ -92,11 +112,12 @@ app.get("/api/v1/profile", requireAuth, async (req, res) => {
   try {
     res.json(await getUserProfile(req.firebaseUser.uid));
   } catch (e) {
+    console.error("GET /api/v1/profile error:", e);
     res.status(500).json({ error: e.message });
   }
 });
 
-// ---------- Developer API keys ----------
+// ---------- Developer API keys (dashboard: generate/list/revoke) ----------
 
 app.get("/api/v1/developer/keys", requireAuth, async (req, res) => {
   try {
@@ -110,12 +131,26 @@ app.get("/api/v1/developer/keys", requireAuth, async (req, res) => {
       createdAt: k.createdAt,
       usedToday: k.usedToday,
       limitPerDay: k.limitPerDay,
+      usedThisMonth: k.usedThisMonth,
+      limitPerMonth: k.limitPerMonth,
     }));
     res.json({ keys: safeKeys });
   } catch (e) {
+    console.error("GET /api/v1/developer/keys error:", e);
     res.status(500).json({ error: e.message });
   }
 });
+
+// Real, enforced limits per tier. Free tier: 8 requests/day, hard-capped
+// at 50/month total (well under the 60/month ceiling) — 8/day * 30 days
+// would allow up to 240/month with no cap, so the monthly limit is what
+// actually stops a user who spreads requests out evenly across the month.
+// `null` means unlimited for that period.
+const TIER_LIMITS = {
+  free: { limitPerDay: 8, limitPerMonth: 50 },
+  pro: { limitPerDay: 10000, limitPerMonth: 300000 },
+  enterprise: { limitPerDay: null, limitPerMonth: null },
+};
 
 app.post("/api/v1/developer/keys", express.json(), requireAuth, async (req, res) => {
   try {
@@ -124,8 +159,7 @@ app.post("/api/v1/developer/keys", express.json(), requireAuth, async (req, res)
     const rawKey = `av_${tier}_${crypto.randomBytes(24).toString("hex")}`;
     const preview = `${rawKey.slice(0, 10)}...${rawKey.slice(-4)}`;
 
-    const limitsByTier = { free: 100, pro: 10000, enterprise: Infinity };
-    const limitPerDay = limitsByTier[tier] ?? 100;
+    const { limitPerDay, limitPerMonth } = TIER_LIMITS[tier] ?? TIER_LIMITS.free;
 
     const created = await createApiKey({
       uid: req.firebaseUser.uid,
@@ -134,11 +168,13 @@ app.post("/api/v1/developer/keys", express.json(), requireAuth, async (req, res)
       preview,
       tier,
       limitPerDay,
+      limitPerMonth,
     });
 
     // full raw key is only ever returned here, on creation
     res.json({ key: { ...created, key: rawKey } });
   } catch (e) {
+    console.error("POST /api/v1/developer/keys error:", e);
     res.status(500).json({ error: e.message });
   }
 });
@@ -148,7 +184,89 @@ app.delete("/api/v1/developer/keys/:keyId", requireAuth, async (req, res) => {
     await revokeApiKey({ uid: req.firebaseUser.uid, keyId: req.params.keyId });
     res.json({ ok: true });
   } catch (e) {
+    console.error("DELETE /api/v1/developer/keys/:keyId error:", e);
     res.status(500).json({ error: e.message });
+  }
+});
+
+/**
+ * Middleware for the PUBLIC developer API (the routes real third-party
+ * developers call with a generated key). Reads the key from
+ * `Authorization: Bearer <key>`, validates it, and enforces both the
+ * daily and monthly limit in one atomic step — a request that would push
+ * either counter over its limit is rejected with 429 before it reaches
+ * TMDb/YouTube, so it costs nothing and can't be gamed by racing requests.
+ */
+async function requireApiKey(req, res, next) {
+  try {
+    const authHeader = req.headers.authorization || "";
+    const rawKey = authHeader.startsWith("Bearer ") ? authHeader.slice(7).trim() : null;
+    if (!rawKey) {
+      return res.status(401).json({ error: "Missing API key. Pass it as 'Authorization: Bearer YOUR_API_KEY'." });
+    }
+
+    const key = await findActiveApiKeyByRawKey(rawKey);
+    if (!key) {
+      return res.status(401).json({ error: "Invalid or revoked API key." });
+    }
+
+    const usage = await checkAndIncrementApiKeyUsage(key.id);
+    if (!usage.allowed) {
+      return res.status(429).json({
+        error: "Rate limit exceeded for this API key.",
+        usedToday: usage.usedToday,
+        limitPerDay: usage.limitPerDay,
+        usedThisMonth: usage.usedThisMonth,
+        limitPerMonth: usage.limitPerMonth,
+      });
+    }
+
+    req.apiKey = key;
+    next();
+  } catch (e) {
+    console.error("requireApiKey error:", e);
+    res.status(500).json({ error: e.message });
+  }
+}
+
+// ---------- Public Developer API (rate-limited by API key — this is what generated keys actually unlock) ----------
+
+app.get("/api/v1/public/movies/popular", requireApiKey, async (req, res) => {
+  try {
+    const { page = 1 } = req.query;
+    res.json(await getPopularMovies({ page: Number(page) }));
+  } catch (e) {
+    console.error("GET /api/v1/public/movies/popular error:", e);
+    res.status(502).json({ error: e.message });
+  }
+});
+
+app.get("/api/v1/public/movies/search", requireApiKey, async (req, res) => {
+  try {
+    const { q = "", page = 1 } = req.query;
+    res.json(await searchMovies(q, { page: Number(page) }));
+  } catch (e) {
+    console.error("GET /api/v1/public/movies/search error:", e);
+    res.status(502).json({ error: e.message });
+  }
+});
+
+app.get("/api/v1/public/movies/:id", requireApiKey, async (req, res) => {
+  try {
+    res.json(await getMovieById(req.params.id));
+  } catch (e) {
+    console.error("GET /api/v1/public/movies/:id error:", e);
+    res.status(502).json({ error: e.message });
+  }
+});
+
+app.get("/api/v1/public/music-videos/search", requireApiKey, async (req, res) => {
+  try {
+    const { q = "" } = req.query;
+    res.json(await searchMusicVideos(q));
+  } catch (e) {
+    console.error("GET /api/v1/public/music-videos/search error:", e);
+    res.status(502).json({ error: e.message });
   }
 });
 
@@ -172,6 +290,7 @@ app.post("/api/v1/checkout", express.json(), requireAuth, async (req, res) => {
     });
     res.json(result);
   } catch (e) {
+    console.error("POST /api/v1/checkout error:", e);
     res.status(502).json({ error: e.message });
   }
 });
@@ -191,6 +310,7 @@ app.get("/api/v1/checkout/verify/paystack", requireAuth, async (req, res) => {
     }
     res.json(result);
   } catch (e) {
+    console.error("GET /api/v1/checkout/verify/paystack error:", e);
     res.status(502).json({ error: e.message });
   }
 });
@@ -234,6 +354,7 @@ app.post("/api/v1/checkout/usdt-manual", express.json(), requireAuth, async (req
       currency: "USDT",
     });
   } catch (e) {
+    console.error("POST /api/v1/checkout/usdt-manual error:", e);
     res.status(400).json({ error: e.message });
   }
 });
@@ -259,6 +380,7 @@ app.post("/api/v1/checkout/usdt-manual/confirm", express.json(), requireAuth, as
     });
     res.json({ verified: true });
   } catch (e) {
+    console.error("POST /api/v1/checkout/usdt-manual/confirm error:", e);
     res.status(500).json({ error: e.message });
   }
 });
@@ -270,6 +392,7 @@ app.post("/api/v1/checkout/usdt-manual/submit-proof", express.json({ limit: "2mb
     const result = await submitPaymentForReview({ uid: req.firebaseUser.uid, planId, note, imageBase64 });
     res.json({ status: "pending_review", ...result });
   } catch (e) {
+    console.error("POST /api/v1/checkout/usdt-manual/submit-proof error:", e);
     res.status(500).json({ error: e.message });
   }
 });
@@ -281,6 +404,7 @@ app.post("/api/v1/admin/payments/:reviewId/approve", express.json(), async (req,
   try {
     res.json(await approvePendingReview(req.params.reviewId));
   } catch (e) {
+    console.error("POST /api/v1/admin/payments/:reviewId/approve error:", e);
     res.status(500).json({ error: e.message });
   }
 });
@@ -289,6 +413,7 @@ app.get("/api/v1/payments/history", requireAuth, async (req, res) => {
   try {
     res.json(await getPaymentHistory(req.firebaseUser.uid));
   } catch (e) {
+    console.error("GET /api/v1/payments/history error:", e);
     res.status(500).json({ error: e.message });
   }
 });
