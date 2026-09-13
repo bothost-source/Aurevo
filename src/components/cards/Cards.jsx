@@ -51,7 +51,11 @@ export function MovieCard({ movie, onPlay }) {
             </svg>
           </button>
           
-          <div className="movie-card__download">
+          {/* stopPropagation here so tapping the download control doesn't
+              also fire the card's own onClick={handlePlay} above it —
+              previously a tap on/near this button opened the player AND
+              started a download at the same time. */}
+          <div className="movie-card__download" onClick={(e) => e.stopPropagation()}>
             <DownloadButton
               fileUrl={movie.downloadUrl}
               fileName={`${movie.title}.mp4`}
