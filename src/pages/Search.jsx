@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from "react";
-import { MovieCard, MusicCard, VideoCard } from "../components/cards/Cards.jsx";
+import { MovieCard, MusicCard } from "../components/cards/Cards.jsx";
 import { searchMovies, searchMusicVideos } from "../services/api.js";
 import "./Search.css";
 
@@ -160,7 +160,7 @@ export default function Search() {
                   <h2 className="section-title">Music Videos ({results.videos.length})</h2>
                   <div className="rail">
                     {results.videos.map((video) => (
-                      <VideoCard key={video.id} video={video} />
+                      <MusicCard key={video.id} track={video} />
                     ))}
                   </div>
                 </>
