@@ -132,17 +132,23 @@ function CardCheckout({ planId, user }) {
 function UsdtCheckout({ planId, user, onConfirmed }) {
   const [details, setDetails] = useState(null);
   const [txid, setTxid] = useState("");
-  const [status, setStatus] = useState("idle"); // idle | loading | verifying | confirmed | error
+  const [status, setStatus] = useState("idle"); // idle | loading | verifying | confirmed | error | pending_review
   const [error, setError] = useState(null);
   const [showProofForm, setShowProofForm] = useState(false);
   const [note, setNote] = useState("");
 
-  useEffect(() => {
-    if (!user) return;
+  function loadDetails() {
     setStatus("loading");
+    setError(null);
     getUsdtPaymentDetails({ planId })
       .then((d) => { setDetails(d); setStatus("idle"); })
       .catch((e) => { setError(e.message); setStatus("error"); });
+  }
+
+  useEffect(() => {
+    if (!user) return;
+    loadDetails();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [planId, user]);
 
   async function handleConfirm() {
@@ -173,6 +179,24 @@ function UsdtCheckout({ planId, user, onConfirmed }) {
   if (status === "loading") return <p className="helper-text">Loading payment details…</p>;
   if (status === "confirmed") return <p className="success-text">Payment confirmed on-chain. Thank you!</p>;
   if (status === "pending_review") return <p className="helper-text">Submitted for manual review — you'll be confirmed once checked by hand.</p>;
+
+  // Previously, a failed getUsdtPaymentDetails() call set status to
+  // "error" but nothing below actually checked for that — the component
+  // fell through to the `{details && (...)}` block, which rendered
+  // nothing at all since `details` was still null. That's why the USDT
+  // address appeared to just not show up, with no visible error.
+  if (status === "error" && !details) {
+    return (
+      <div className="glass" style={{ padding: 20 }}>
+        <p className="error-text" style={{ marginBottom: 12 }}>
+          {error || "Failed to load the USDT payment address."}
+        </p>
+        <button className="btn btn-primary" onClick={loadDetails}>
+          Try again
+        </button>
+      </div>
+    );
+  }
 
   return (
     <div className="glass" style={{ padding: 20 }}>
