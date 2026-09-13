@@ -3,6 +3,7 @@ import express from "express";
 import cors from "cors";
 import path from "path";
 import { fileURLToPath } from "url";
+import crypto from "crypto";
 
 import { searchMovies, getPopularMovies, getMovieById } from "../src/services/providers/movieProvider.server.js";
 import { searchMusicVideos } from "../src/services/providers/youtubeProvider.server.js";
@@ -17,6 +18,9 @@ import {
   getPaymentHistory,
   submitPaymentForReview,
   approvePendingReview,
+  createApiKey,
+  listApiKeysForUser,
+  revokeApiKey,
 } from "./db.js";
 
 const app = express();
@@ -87,6 +91,62 @@ app.post("/api/v1/profile", express.json(), requireAuth, async (req, res) => {
 app.get("/api/v1/profile", requireAuth, async (req, res) => {
   try {
     res.json(await getUserProfile(req.firebaseUser.uid));
+  } catch (e) {
+    res.status(500).json({ error: e.message });
+  }
+});
+
+// ---------- Developer API keys ----------
+
+app.get("/api/v1/developer/keys", requireAuth, async (req, res) => {
+  try {
+    const keys = await listApiKeysForUser(req.firebaseUser.uid);
+    // never send back the full secret after creation — just a preview
+    const safeKeys = keys.map((k) => ({
+      id: k.id,
+      label: k.label,
+      preview: k.preview,
+      tier: k.tier,
+      createdAt: k.createdAt,
+      usedToday: k.usedToday,
+      limitPerDay: k.limitPerDay,
+    }));
+    res.json({ keys: safeKeys });
+  } catch (e) {
+    res.status(500).json({ error: e.message });
+  }
+});
+
+app.post("/api/v1/developer/keys", express.json(), requireAuth, async (req, res) => {
+  try {
+    const { label, tier = "free" } = req.body;
+
+    const rawKey = `av_${tier}_${crypto.randomBytes(24).toString("hex")}`;
+    const preview = `${rawKey.slice(0, 10)}...${rawKey.slice(-4)}`;
+
+    const limitsByTier = { free: 100, pro: 10000, enterprise: Infinity };
+    const limitPerDay = limitsByTier[tier] ?? 100;
+
+    const created = await createApiKey({
+      uid: req.firebaseUser.uid,
+      label: label || `Key ${Date.now()}`,
+      key: rawKey,
+      preview,
+      tier,
+      limitPerDay,
+    });
+
+    // full raw key is only ever returned here, on creation
+    res.json({ key: { ...created, key: rawKey } });
+  } catch (e) {
+    res.status(500).json({ error: e.message });
+  }
+});
+
+app.delete("/api/v1/developer/keys/:keyId", requireAuth, async (req, res) => {
+  try {
+    await revokeApiKey({ uid: req.firebaseUser.uid, keyId: req.params.keyId });
+    res.json({ ok: true });
   } catch (e) {
     res.status(500).json({ error: e.message });
   }
