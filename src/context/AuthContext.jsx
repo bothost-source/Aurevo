@@ -32,7 +32,18 @@ export function AuthProvider({ children }) {
 
   const value = useMemo(
     () => ({
-      user: firebaseUser ? { uid: firebaseUser.uid, email: firebaseUser.email, ...profile } : null,
+      user: firebaseUser
+        ? {
+            uid: firebaseUser.uid,
+            email: firebaseUser.email,
+            ...profile,
+            // Re-attach the Firebase User's getIdToken so code that calls
+            // user.getIdToken() (e.g. ApiManagement.jsx) keeps working even
+            // though `user` here is a plain merged object, not the actual
+            // Firebase User instance.
+            getIdToken: (...args) => firebaseUser.getIdToken(...args),
+          }
+        : null,
       authResolved: firebaseUser !== undefined,
       loading,
       error,
@@ -66,11 +77,11 @@ export function AuthProvider({ children }) {
       async signUp({ email, password, username, country, language }) {
         setLoading(true);
         setError(null);
-        
+
         try {
           // Step 1: Create Firebase auth user
           const cred = await createUserWithEmailAndPassword(auth, email, password);
-          
+
           // Step 2: Save profile to backend (don't block on failure)
           try {
             await saveProfile({ username, country, language });
@@ -80,11 +91,11 @@ export function AuthProvider({ children }) {
             // Set basic profile so user isn't stuck
             setProfile({ username, country, language });
           }
-          
+
           return cred.user;
         } catch (e) {
           console.error("Signup error:", e);
-          
+
           // Handle specific Firebase errors with clear messages
           if (e.code === "auth/email-already-in-use") {
             setError("This email is already registered. Try signing in instead.");
@@ -124,7 +135,7 @@ export function useAuth() {
 
 function mapFirebaseError(e) {
   const code = e?.code || "";
-  
+
   // Auth errors
   if (code.includes("wrong-password") || code.includes("invalid-credential")) {
     return "Incorrect email or password.";
@@ -150,6 +161,6 @@ function mapFirebaseError(e) {
   if (code.includes("too-many-requests")) {
     return "Too many attempts. Please wait and try again.";
   }
-  
+
   return "Something went wrong. Please try again.";
 }
