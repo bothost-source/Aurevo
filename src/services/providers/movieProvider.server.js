@@ -12,8 +12,6 @@ const movieKeyPool = new ApiKeyPool(
   { cooldownMs: 60_000 }
 );
 
-// Small helper to attach the v3 api_key query param without double-adding
-// `?` when the base URL already has other query params.
 function withApiKey(url, key) {
   const joiner = url.includes("?") ? "&" : "?";
   return `${url}${joiner}api_key=${encodeURIComponent(key)}`;
@@ -60,8 +58,9 @@ export async function getPopularMovies({ page = 1 } = {}) {
 }
 
 export async function getMovieById(id) {
+ 
   const res = await fetchWithKeyPool(movieKeyPool, (key) => ({
-    url: withApiKey(`${MOVIE_PROVIDER_BASE_URL}/movie/${encodeURIComponent(id)}?append_to_response=credits`, key),
+    url: withApiKey(`${MOVIE_PROVIDER_BASE_URL}/movie/${encodeURIComponent(id)}?append_to_response=credits,videos`, key),
     init: { headers: { accept: "application/json" } },
   }));
   const data = await res.json();
@@ -84,6 +83,16 @@ function normalizeMovieList(raw, genreMap) {
 }
 
 function normalizeMovieDetail(m) {
+  // Prefer an official YouTube trailer; fall back to any YouTube trailer,
+  // then any YouTube video at all, since some titles are only tagged
+  // "Teaser" or "Clip" rather than "Trailer".
+  const videos = m.videos?.results ?? [];
+  const trailer =
+    videos.find((v) => v.site === "YouTube" && v.type === "Trailer" && v.official) ||
+    videos.find((v) => v.site === "YouTube" && v.type === "Trailer") ||
+    videos.find((v) => v.site === "YouTube") ||
+    null;
+
   return {
     id: m.id,
     title: m.title,
@@ -95,6 +104,10 @@ function normalizeMovieDetail(m) {
     cast: (m.credits?.cast ?? []).slice(0, 10).map((c) => c.name),
     genres: (m.genres ?? []).map((g) => g.name),
     rating: typeof m.vote_average === "number" ? Number(m.vote_average.toFixed(1)) : null,
+    // A real, embeddable YouTube trailer key — null if TMDb has none for
+    // this title, in which case the UI should say so honestly rather than
+    // show a broken player.
+    trailerKey: trailer?.key || null,
     // TMDb only provides metadata, not streaming rights — these two flags
     // must come from your own licensing/catalog layer, never invented here.
     streamAuthorized: Boolean(m.aurevo_stream_authorized),
