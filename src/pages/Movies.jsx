@@ -2,6 +2,10 @@ import { useState, useEffect } from "react";
 import { MovieCard } from "../components/cards/Cards.jsx";
 import { getPopularMovies, searchMovies } from "../services/api.js";
 import { useAuth } from "../context/AuthContext.jsx";
+import DownloadButton from "../components/DownloadButton.jsx";
+
+// Same base-URL convention used in services/paymentsClient.js.
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "http://localhost:8787";
 
 export default function Movies() {
   const { user } = useAuth();
@@ -11,6 +15,10 @@ export default function Movies() {
   const [page, setPage] = useState(1);
   const [searchQuery, setSearchQuery] = useState("");
   const [isSearching, setIsSearching] = useState(false);
+
+  const [selectedMovie, setSelectedMovie] = useState(null);
+  const [detailLoading, setDetailLoading] = useState(false);
+  const [detailError, setDetailError] = useState(null);
 
   const isFree = !user;
 
@@ -51,6 +59,32 @@ export default function Movies() {
     } finally {
       setLoading(false);
     }
+  }
+
+  // Tapping a poster now opens the trailer modal instead of doing
+  // nothing. Previously MovieCard was rendered without an onPlay prop at
+  // all, so tapping it just console.logged — the only thing that visibly
+  // "did" anything on tap was the download button underneath it.
+  async function handleOpenMovie(movie) {
+    setSelectedMovie(movie);
+    setDetailLoading(true);
+    setDetailError(null);
+    try {
+      const res = await fetch(`${API_BASE_URL}/api/v1/movies/${movie.id}`);
+      if (!res.ok) throw new Error("Could not load movie details.");
+      const detail = await res.json();
+      setSelectedMovie(detail);
+    } catch (err) {
+      console.error("Failed to load movie detail:", err);
+      setDetailError("Could not load full details for this title.");
+    } finally {
+      setDetailLoading(false);
+    }
+  }
+
+  function closeModal() {
+    setSelectedMovie(null);
+    setDetailError(null);
   }
 
   return (
@@ -116,7 +150,7 @@ export default function Movies() {
         <>
           <div className="grid">
             {movies.map((movie) => (
-              <MovieCard key={movie.id} movie={movie} />
+              <MovieCard key={movie.id} movie={movie} onPlay={handleOpenMovie} />
             ))}
           </div>
 
@@ -139,6 +173,107 @@ export default function Movies() {
           </div>
         </>
       )}
+
+      {selectedMovie && (
+        <MovieDetailModal
+          movie={selectedMovie}
+          loading={detailLoading}
+          error={detailError}
+          onClose={closeModal}
+        />
+      )}
+    </div>
+  );
+}
+
+function MovieDetailModal({ movie, loading, error, onClose }) {
+  return (
+    <div
+      onClick={onClose}
+      style={{
+        position: "fixed", inset: 0, background: "rgba(0,0,0,0.75)",
+        display: "flex", alignItems: "flex-end", zIndex: 1000,
+      }}
+    >
+      <div
+        onClick={(e) => e.stopPropagation()}
+        className="glass"
+        style={{
+          width: "100%", maxHeight: "90vh", overflowY: "auto",
+          borderRadius: "16px 16px 0 0", position: "relative",
+        }}
+      >
+        <button
+          onClick={onClose}
+          aria-label="Close"
+          style={{
+            position: "absolute", top: 12, right: 12, zIndex: 2,
+            width: 36, height: 36, borderRadius: "50%", border: "none",
+            background: "rgba(0,0,0,0.6)", color: "#fff", fontSize: 20, cursor: "pointer",
+          }}
+        >
+          ×
+        </button>
+
+        {/* Trailer — a real YouTube embed when TMDb has one for this
+            title. YouTube's own player already gives play/pause, seek,
+            and a fullscreen button that rotates to landscape on mobile,
+            so this covers "expandable to landscape, forward/back, video
+            controls" using YouTube's real player rather than a fake one. */}
+        <div style={{ position: "relative", width: "100%", aspectRatio: "16/9", background: "#000" }}>
+          {loading ? (
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "center", height: "100%", color: "var(--ink-500)" }}>
+              Loading…
+            </div>
+          ) : movie.trailerKey ? (
+            <iframe
+              src={`https://www.youtube.com/embed/${movie.trailerKey}?rel=0`}
+              title={`${movie.title} trailer`}
+              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+              allowFullScreen
+              style={{ position: "absolute", inset: 0, width: "100%", height: "100%", border: "none" }}
+            />
+          ) : (
+            <>
+              {movie.backdropUrl && (
+                <img
+                  src={movie.backdropUrl}
+                  alt=""
+                  style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover", opacity: 0.5 }}
+                />
+              )}
+              <div style={{ position: "absolute", inset: 0, display: "flex", alignItems: "center", justifyContent: "center", color: "var(--ink-300)", textAlign: "center", padding: 20 }}>
+                Trailer not available for this title yet.
+              </div>
+            </>
+          )}
+        </div>
+
+        <div style={{ padding: 20 }}>
+          <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 12 }}>
+            <h2 style={{ margin: 0, color: "var(--ink-000)" }}>{movie.title}</h2>
+            {/* Small, dedicated download control — not the whole poster
+                triggering a download anymore. fileUrl stays empty until
+                Aurevo has a real, licensed download source; until then
+                DownloadButton shows a clean "not available" state. */}
+            <div style={{ flexShrink: 0 }}>
+              <DownloadButton fileUrl={movie.downloadUrl} fileName={`${movie.title}.mp4`} compact />
+            </div>
+          </div>
+
+          <p style={{ color: "var(--ink-500)", fontSize: "0.85rem", margin: "6px 0 12px" }}>
+            {movie.releaseDate?.split("-")[0]}
+            {movie.rating ? ` • Rating: ${movie.rating}/10` : ""}
+            {movie.genres?.length ? ` • ${movie.genres.join(", ")}` : ""}
+          </p>
+
+          {error && <p className="error-text">{error}</p>}
+
+          {movie.synopsis && (
+            <p style={{ color: "var(--ink-300)", fontSize: "0.9rem", lineHeight: 1.5 }}>{movie.synopsis}</p>
+          )}
+        </div>
+      </div>
     </div>
   );
 }
