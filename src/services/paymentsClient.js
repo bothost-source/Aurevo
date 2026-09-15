@@ -1,13 +1,5 @@
-/**
- * Frontend helper that calls YOUR backend's endpoints (see server/index.js)
- * — the browser never talks to Paystack directly, since
- * that would require exposing secret keys. Every call here attaches the
- * signed-in user's Firebase ID token so the server knows who's really
- * asking, instead of trusting whatever the client claims.
- */
 import { auth } from "./firebase.js";
-
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "http://localhost:8787";
+import { API_BASE_URL } from "./config.js";
 
 async function authHeader() {
   const token = await auth.currentUser?.getIdToken();
