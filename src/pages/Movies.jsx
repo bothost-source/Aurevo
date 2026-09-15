@@ -3,9 +3,7 @@ import { MovieCard } from "../components/cards/Cards.jsx";
 import { getPopularMovies, searchMovies } from "../services/api.js";
 import { useAuth } from "../context/AuthContext.jsx";
 import DownloadButton from "../components/DownloadButton.jsx";
-
-// Same base-URL convention used in services/paymentsClient.js.
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "http://localhost:8787";
+import { API_BASE_URL } from "../services/config.js";
 
 export default function Movies() {
   const { user } = useAuth();
@@ -61,10 +59,6 @@ export default function Movies() {
     }
   }
 
-  // Tapping a poster now opens the trailer modal instead of doing
-  // nothing. Previously MovieCard was rendered without an onPlay prop at
-  // all, so tapping it just console.logged — the only thing that visibly
-  // "did" anything on tap was the download button underneath it.
   async function handleOpenMovie(movie) {
     setSelectedMovie(movie);
     setDetailLoading(true);
@@ -215,11 +209,6 @@ function MovieDetailModal({ movie, loading, error, onClose }) {
           ×
         </button>
 
-        {/* Trailer — a real YouTube embed when TMDb has one for this
-            title. YouTube's own player already gives play/pause, seek,
-            and a fullscreen button that rotates to landscape on mobile,
-            so this covers "expandable to landscape, forward/back, video
-            controls" using YouTube's real player rather than a fake one. */}
         <div style={{ position: "relative", width: "100%", aspectRatio: "16/9", background: "#000" }}>
           {loading ? (
             <div style={{ display: "flex", alignItems: "center", justifyContent: "center", height: "100%", color: "var(--ink-500)" }}>
@@ -252,10 +241,6 @@ function MovieDetailModal({ movie, loading, error, onClose }) {
         <div style={{ padding: 20 }}>
           <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 12 }}>
             <h2 style={{ margin: 0, color: "var(--ink-000)" }}>{movie.title}</h2>
-            {/* Small, dedicated download control — not the whole poster
-                triggering a download anymore. fileUrl stays empty until
-                Aurevo has a real, licensed download source; until then
-                DownloadButton shows a clean "not available" state. */}
             <div style={{ flexShrink: 0 }}>
               <DownloadButton fileUrl={movie.downloadUrl} fileName={`${movie.title}.mp4`} compact />
             </div>
