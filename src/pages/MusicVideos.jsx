@@ -7,6 +7,7 @@ export default function MusicVideos() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [searchQuery, setSearchQuery] = useState("");
+  const [nowPlaying, setNowPlaying] = useState(null);
 
   useEffect(() => {
     loadVideos();
@@ -48,7 +49,7 @@ export default function MusicVideos() {
       <div className="page-header">
         <div>
           <h1>Music videos</h1>
-          <p>Official music videos from YouTube.</p>
+          <p>Official music videos from YouTube — plays with video here.</p>
         </div>
       </div>
 
@@ -86,10 +87,72 @@ export default function MusicVideos() {
       {!loading && !error && (
         <div className="grid">
           {videos.map((video) => (
-            <MusicCard key={video.id} track={video} />
+            <MusicCard key={video.id} track={video} onPlay={() => setNowPlaying(video)} />
           ))}
         </div>
       )}
+
+      {nowPlaying && (
+        <VideoPlayerModal video={nowPlaying} onClose={() => setNowPlaying(null)} />
+      )}
+    </div>
+  );
+}
+
+function VideoPlayerModal({ video, onClose }) {
+  return (
+    <div
+      onClick={onClose}
+      style={{
+        position: "fixed", inset: 0, background: "rgba(0,0,0,0.75)",
+        display: "flex", alignItems: "flex-end", zIndex: 1000,
+      }}
+    >
+      <div
+        onClick={(e) => e.stopPropagation()}
+        className="glass"
+        style={{
+          width: "100%", maxHeight: "90vh", overflowY: "auto",
+          borderRadius: "16px 16px 0 0", position: "relative",
+        }}
+      >
+        <button
+          onClick={onClose}
+          aria-label="Close"
+          style={{
+            position: "absolute", top: 12, right: 12, zIndex: 2,
+            width: 36, height: 36, borderRadius: "50%", border: "none",
+            background: "rgba(0,0,0,0.6)", color: "#fff", fontSize: 20, cursor: "pointer",
+          }}
+        >
+          ×
+        </button>
+
+        {/* Real, visible YouTube embed — play/pause, seek, and
+            fullscreen/landscape all come from YouTube's own player. */}
+        <div style={{ position: "relative", width: "100%", aspectRatio: "16/9", background: "#000" }}>
+          {video.id ? (
+            <iframe
+              src={`https://www.youtube.com/embed/${video.id}?autoplay=1&rel=0`}
+              title={video.title}
+              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+              allowFullScreen
+              style={{ position: "absolute", inset: 0, width: "100%", height: "100%", border: "none" }}
+            />
+          ) : (
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "center", height: "100%", color: "var(--ink-500)" }}>
+              This video isn't available to play.
+            </div>
+          )}
+        </div>
+
+        <div style={{ padding: 20 }}>
+          <h2 style={{ margin: 0, color: "var(--ink-000)" }}>{video.title}</h2>
+          <p style={{ color: "var(--ink-500)", fontSize: "0.85rem", margin: "6px 0 0" }}>
+            {video.artist || video.channelTitle}
+          </p>
+        </div>
+      </div>
     </div>
   );
 }
